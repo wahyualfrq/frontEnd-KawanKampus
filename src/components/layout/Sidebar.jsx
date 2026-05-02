@@ -1,12 +1,23 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, MessageSquare, MapPin, LogOut } from 'lucide-react';
+import { 
+  Map as MapIcon, 
+  LayoutDashboard, 
+  MessageSquare, 
+  Heart, 
+  History, 
+  Settings, 
+  LogOut 
+} from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { cn } from '../../utils/cn';
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Chatbot AI', href: '/chatbot', icon: MessageSquare },
-  { name: 'Places', href: '/places', icon: MapPin },
+  { name: 'Peta', href: '/places', icon: MapIcon, desc: 'Jelajahi sekitar kampus' },
+  { name: 'Kanban', href: '/dashboard', icon: LayoutDashboard, desc: 'Kelola tugasmu' },
+  { name: 'Chatbot AI', href: '/chatbot', icon: MessageSquare, desc: 'Tanya apa saja' },
+  { name: 'Favorit', href: '/favorites', icon: Heart, desc: 'Tempat favoritmu' },
+  { name: 'Riwayat', href: '/history', icon: History, desc: 'Riwayat pencarian' },
+  { name: 'Pengaturan', href: '/settings', icon: Settings, desc: 'Akun & preferensi' },
 ];
 
 export default function Sidebar() {
@@ -14,58 +25,81 @@ export default function Sidebar() {
   const { user, logout } = useAuthStore();
 
   return (
-    <div className="flex h-full w-64 flex-col glass border-r bg-white/80 dark:bg-zinc-900/80">
-      <div className="flex h-16 shrink-0 items-center px-6 border-b border-zinc-200 dark:border-zinc-800">
-        <span className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
-          KawanKampus
-        </span>
+    <div className="flex h-full w-[260px] flex-col sidebar-bg text-white">
+      <div className="flex h-20 shrink-0 items-center px-6">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-[#FD6825] rounded-xl flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-[#FD6825]/20">K</div>
+          <span className="text-xl font-bold tracking-tight">KawanKampus</span>
+        </div>
       </div>
+
       <div className="flex flex-1 flex-col overflow-y-auto px-4 py-4">
-        <nav className="flex-1 space-y-1">
+        <nav className="flex-1 space-y-2">
           {navigation.map((item) => {
-            const isActive = location.pathname.startsWith(item.href);
+            const isActive = location.pathname === item.href;
             return (
               <Link
                 key={item.name}
                 to={item.href}
                 className={cn(
                   isActive
-                    ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400'
-                    : 'text-zinc-700 hover:bg-zinc-50 hover:text-indigo-600 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-indigo-400',
-                  'group flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors'
+                    ? 'bg-[#FDC439] text-[#111827] shadow-lg shadow-[#FDC439]/20 font-bold'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 hover:translate-x-1 font-medium',
+                  'group flex items-start rounded-xl px-4 py-3.5 text-sm transition-all'
                 )}
               >
                 <item.icon
                   className={cn(
-                    isActive
-                      ? 'text-indigo-600 dark:text-indigo-400'
-                      : 'text-zinc-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400',
-                    'mr-3 h-5 w-5 flex-shrink-0 transition-colors'
+                    isActive ? 'text-[#111827]' : 'text-gray-400 group-hover:text-white',
+                    'mr-3 h-5 w-5 flex-shrink-0 transition-colors mt-0.5'
                   )}
-                  aria-hidden="true"
                 />
-                {item.name}
+                <div className="flex flex-col">
+                  <span>{item.name}</span>
+                  {!isActive && <span className="text-[10px] text-gray-500 font-normal">{item.desc}</span>}
+                </div>
               </Link>
             );
           })}
         </nav>
       </div>
-      <div className="border-t border-zinc-200 dark:border-zinc-800 p-4">
-        <div className="flex items-center w-full justify-between px-3 py-2">
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-zinc-900 dark:text-white">
-              {user?.name || 'User'}
-            </span>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 truncate w-32">
-              {user?.email || 'user@example.com'}
-            </span>
+
+      <div className="px-4 mb-6">
+        <div className="bg-white/5 rounded-2xl p-4 border border-white/10 relative overflow-hidden group">
+          <div className="absolute -top-4 -right-4 p-2 opacity-5 group-hover:opacity-10 transition-opacity">
+            <MessageSquare size={80} className="text-[#FD6825]" />
+          </div>
+          <div className="relative z-10">
+            <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center mb-3">
+              <span className="text-xl">🤖</span>
+            </div>
+            <h4 className="font-bold text-xs mb-1">Tanya AI apapun!</h4>
+            <p className="text-[10px] text-gray-500 mb-3 leading-relaxed">
+              Dapatkan rekomendasi & tips belajar dari AI KawanKampus.
+            </p>
+            <button className="w-full py-2 bg-[#FD6825] hover:bg-[#E85A1D] text-white text-[10px] font-bold rounded-xl transition-all shadow-lg shadow-[#FD6825]/20">
+              Mulai Chat
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t border-white/10 p-5 bg-black/10">
+        <div className="flex items-center w-full justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-gray-700 overflow-hidden border border-white/10">
+               <img src="https://ui-avatars.com/api/?name=Wahyu&background=random" alt="User" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-bold">{user?.name || 'Wahyu'}</span>
+              <span className="text-[10px] text-gray-500 font-medium">Mahasiswa</span>
+            </div>
           </div>
           <button
             onClick={logout}
-            className="text-zinc-500 hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400 transition-colors p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-500/10"
-            title="Logout"
+            className="text-gray-500 hover:text-red-400 transition-colors p-2"
           >
-            <LogOut className="h-5 w-5" />
+            <LogOut className="h-4 w-4" />
           </button>
         </div>
       </div>

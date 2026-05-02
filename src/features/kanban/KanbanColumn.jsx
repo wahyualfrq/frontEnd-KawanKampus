@@ -9,10 +9,10 @@ export default function KanbanColumn({ id, title, tasks }) {
   return (
     <div className="flex flex-col w-80 shrink-0">
       <div className="flex items-center justify-between mb-4 px-1">
-        <h3 className="font-semibold text-zinc-700 dark:text-zinc-300 capitalize">
+        <h3 className="font-bold text-gray-900 capitalize">
           {title.toLowerCase()}
         </h3>
-        <span className="bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 py-0.5 px-2.5 rounded-full text-xs font-medium">
+        <span className="bg-white text-gray-500 py-1 px-3 rounded-lg text-xs font-bold shadow-soft border border-gray-100">
           {tasks.length}
         </span>
       </div>
@@ -20,8 +20,8 @@ export default function KanbanColumn({ id, title, tasks }) {
       <div
         ref={setNodeRef}
         className={cn(
-          "flex-1 flex flex-col gap-3 p-3 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/20 border border-zinc-200/50 dark:border-zinc-800/50 min-h-[200px] transition-colors",
-          isOver && "bg-zinc-200/50 dark:bg-zinc-800/50 border-indigo-300 dark:border-indigo-500/30"
+          "flex-1 flex flex-col gap-4 p-4 rounded-[20px] bg-gray-50/50 border border-gray-100 min-h-[400px] transition-all",
+          isOver && "bg-primary-soft border-primary/30"
         )}
       >
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>

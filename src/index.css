@@ -3,65 +3,68 @@
 @theme {
   --font-sans: 'Inter', system-ui, sans-serif;
   
-  --color-primary-50: #eef2ff;
-  --color-primary-100: #e0e7ff;
-  --color-primary-500: #6366f1;
-  --color-primary-600: #4f46e5;
-  --color-primary-700: #4338ca;
+  /* Brand Colors */
+  --color-sidebar-bg: #292929;
+  --color-sidebar-active: #FDC439;
+  --color-primary: #FD6825;
+  --color-primary-hover: #E85A1D;
+  --color-primary-soft: #FFF1E9;
   
-  --color-surface-light: #ffffff;
-  --color-surface-dark: #0f172a;
-  --color-surface-hover-light: #f8fafc;
-  --color-surface-hover-dark: #1e293b;
+  /* System Colors */
+  --color-ai-purple: #7C3AED;
+  --color-ai-blue: #3B82F6;
+  --color-success-green: #22C55E;
+  --color-success-soft: #DCFCE7;
+  --color-food-orange: #F97316;
   
-  --color-border-light: #e2e8f0;
-  --color-border-dark: #334155;
+  /* Neutral Colors */
+  --color-bg-neutral: #F9FAFB;
+  --color-text-main: #111827;
+  --color-text-muted: #6B7280;
+  --color-text-soft: #9CA3AF;
+
+  --radius-card: 16px;
+  --radius-map: 20px;
+  --radius-button: 12px;
+
+  --shadow-soft: 0 4px 12px rgba(0,0,0,0.05);
+  --shadow-medium: 0 8px 20px rgba(0,0,0,0.08);
 }
 
 @layer base {
   :root {
-    --background: #f4f4f5;
-    --foreground: #09090b;
-    --card: #ffffff;
-    --card-foreground: #09090b;
-    --border: #e4e4e7;
-    --primary: #4f46e5;
-    --primary-foreground: #ffffff;
-    --ring: #4f46e5;
+    --background: #F9FAFB;
+    --foreground: #111827;
+    --card: #FFFFFF;
+    --border: #E5E7EB;
   }
 
-  .dark {
-    --background: #09090b;
-    --foreground: #fafafa;
-    --card: #18181b;
-    --card-foreground: #fafafa;
-    --border: #27272a;
-    --primary: #6366f1;
-    --primary-foreground: #ffffff;
-    --ring: #6366f1;
-  }
-
-  * {
-    border-color: var(--border);
-    box-sizing: border-box;
-  }
-  
   body {
     background-color: var(--background);
     color: var(--foreground);
     font-family: 'Inter', sans-serif;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    margin: 0;
-    padding: 0;
   }
 }
 
 @layer utilities {
   .glass {
-    @apply bg-white/60 dark:bg-black/40 backdrop-blur-md border border-white/20 dark:border-white/10;
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-sm;
   }
-  .glass-card {
-    @apply bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl;
+  
+  .sidebar-bg {
+    background-color: #292929;
+  }
+  
+  .ai-gradient {
+    background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%);
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

@@ -36,16 +36,16 @@ export default function TaskCard({ task, isOverlay }) {
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group relative flex flex-col bg-white dark:bg-zinc-900 p-4 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800",
+        "group relative flex flex-col bg-white p-5 rounded-[16px] shadow-soft border border-gray-100 transition-all",
         isDragging && "opacity-50",
-        isOverlay && "rotate-2 scale-105 shadow-xl border-indigo-500/50 cursor-grabbing",
-        !isOverlay && "cursor-grab hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md transition-all"
+        isOverlay && "rotate-2 scale-105 shadow-medium border-primary cursor-grabbing",
+        !isOverlay && "cursor-grab hover:border-primary/30 hover:shadow-medium"
       )}
       {...attributes}
       {...listeners}
     >
       <div className="flex items-start justify-between">
-        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2 leading-relaxed break-words pr-6">
+        <p className="text-sm font-bold text-gray-900 mb-2 leading-relaxed break-words pr-6">
           {task.title}
         </p>
         <button
@@ -57,12 +57,12 @@ export default function TaskCard({ task, isOverlay }) {
         </button>
       </div>
       
-      <div className="flex items-center justify-between mt-2 pt-3 border-t border-zinc-100 dark:border-zinc-800/50">
-        <div className="flex items-center text-xs text-zinc-400">
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
+        <div className="flex items-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">
           <GripVertical className="w-3 h-3 mr-1" />
-          Drag to move
+          Move Task
         </div>
-        <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-[10px] text-white font-bold shadow-sm">
+        <div className="w-7 h-7 rounded-full orange-gradient flex items-center justify-center text-[10px] text-white font-bold shadow-lg shadow-primary/20">
           {task.title.substring(0, 2).toUpperCase()}
         </div>
       </div>

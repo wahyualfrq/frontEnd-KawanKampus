@@ -125,7 +125,7 @@ export default function KanbanBoard() {
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Project Tasks</h1>
         <button
           onClick={() => setIsAddingTask(true)}
-          className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/20"
+          className="flex items-center px-5 py-2.5 bg-[#FD6825] text-white rounded-xl hover:bg-[#E85A1D] transition-all shadow-lg shadow-[#FD6825]/20 font-bold text-sm"
         >
           <Plus className="w-5 h-5 mr-2" />
           Add Task
@@ -147,13 +147,13 @@ export default function KanbanBoard() {
               placeholder="What needs to be done?"
               className="flex-1 px-4 py-2 bg-zinc-50 dark:bg-black/50 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white"
             />
-            <button type="submit" disabled={createTaskMutation.isPending} className="px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-lg font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50">
+            <button type="submit" disabled={createTaskMutation.isPending} className="px-6 py-2 bg-[#FD6825] text-white rounded-xl font-bold hover:bg-[#E85A1D] transition-all disabled:opacity-50 shadow-lg shadow-[#FD6825]/20">
               {createTaskMutation.isPending ? 'Saving...' : 'Save'}
             </button>
             <button 
               type="button" 
               onClick={() => setIsAddingTask(false)}
-              className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+              className="px-6 py-2 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-all font-bold"
             >
               Cancel
             </button>
