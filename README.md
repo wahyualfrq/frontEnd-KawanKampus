@@ -86,7 +86,3 @@ src/
 - **Tasks**: `/tasks` (GET, POST), `/tasks/:id` (PATCH, DELETE)
 - **Chatbot**: `/chatbot` (POST)
 - **Places**: `/places/nearby` (GET)
-
----
-
-Dibuat dengan ❤️ untuk mahasiswa Indonesia.
