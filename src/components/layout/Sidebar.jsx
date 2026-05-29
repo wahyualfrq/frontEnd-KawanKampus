@@ -10,19 +10,21 @@ import {
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { cn } from '../../utils/cn';
-
-const navigation = [
-  { name: 'Peta', href: '/places', icon: MapIcon, desc: 'Jelajahi sekitar kampus' },
-  { name: 'Kanban', href: '/dashboard', icon: LayoutDashboard, desc: 'Kelola tugasmu' },
-  { name: 'Chatbot AI', href: '/chatbot', icon: MessageSquare, desc: 'Tanya apa saja' },
-  { name: 'Favorit', href: '/favorites', icon: Heart, desc: 'Tempat favoritmu' },
-  { name: 'Riwayat', href: '/history', icon: History, desc: 'Riwayat pencarian' },
-  { name: 'Pengaturan', href: '/settings', icon: Settings, desc: 'Akun & preferensi' },
-];
+import { usePreferences } from '../../context/PreferencesContext';
 
 export default function Sidebar() {
   const location = useLocation();
   const { user, logout } = useAuthStore();
+  const { t } = usePreferences();
+
+  const navigation = [
+    { name: t('peta'), href: '/places', icon: MapIcon, desc: t('peta_desc') },
+    { name: t('kanban'), href: '/dashboard', icon: LayoutDashboard, desc: t('kanban_desc') },
+    { name: t('chatbot'), href: '/chatbot', icon: MessageSquare, desc: t('chatbot_desc') },
+    { name: t('favorit'), href: '/favorites', icon: Heart, desc: t('favorit_desc') },
+    { name: t('riwayat'), href: '/history', icon: History, desc: t('riwayat_desc') },
+    { name: t('pengaturan'), href: '/settings', icon: Settings, desc: t('pengaturan_desc') },
+  ];
 
   return (
     <div className="flex h-full w-[260px] flex-col sidebar-bg text-white">
@@ -73,12 +75,12 @@ export default function Sidebar() {
             <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center mb-3">
               <span className="text-xl">🤖</span>
             </div>
-            <h4 className="font-bold text-xs mb-1">Tanya AI apapun!</h4>
+            <h4 className="font-bold text-xs mb-1">{t('ask_ai_anything')}</h4>
             <p className="text-[10px] text-gray-500 mb-3 leading-relaxed">
-              Dapatkan rekomendasi & tips belajar dari AI KawanKampus.
+              {t('ask_ai_desc')}
             </p>
             <button className="w-full py-2 bg-[#FD6825] hover:bg-[#E85A1D] text-white text-[10px] font-bold rounded-xl transition-all shadow-lg shadow-[#FD6825]/20">
-              Mulai Chat
+              {t('start_chat')}
             </button>
           </div>
         </div>
@@ -87,12 +89,16 @@ export default function Sidebar() {
       <div className="border-t border-white/10 p-5 bg-black/10">
         <div className="flex items-center w-full justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gray-700 overflow-hidden border border-white/10">
-               <img src="https://ui-avatars.com/api/?name=Wahyu&background=random" alt="User" />
+            <div className="w-9 h-9 rounded-full overflow-hidden border border-white/10 bg-[#FD6825] text-white flex items-center justify-center font-black text-xs">
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt="User" className="w-full h-full object-cover" />
+              ) : (
+                user?.name ? user.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : 'U'
+              )}
             </div>
             <div className="flex flex-col">
-              <span className="text-xs font-bold">{user?.name || 'Wahyu'}</span>
-              <span className="text-[10px] text-gray-500 font-medium">Mahasiswa</span>
+              <span className="text-xs font-bold">{user?.name || 'User'}</span>
+              <span className="text-[10px] text-gray-500 font-medium">{t('mahasiswa')}</span>
             </div>
           </div>
           <button

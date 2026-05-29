@@ -47,6 +47,81 @@
   }
 }
 
+/* ── Dark Mode Core Configuration ── */
+.dark {
+  --background: #121212;
+  --foreground: #F4F4F5;
+  --card: #18181B;
+  --border: #27272A;
+}
+
+.dark body {
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+}
+
+/* Automatic Dark Utility Overrides */
+.dark .bg-white {
+  background-color: var(--card) !important;
+}
+
+.dark .bg-gray-50, .dark .bg-gray-50\/20, .dark .bg-gray-50\/50 {
+  background-color: #242427 !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: #27272A !important;
+}
+
+.dark .text-gray-900 {
+  color: var(--foreground) !important;
+}
+
+.dark .text-gray-800 {
+  color: #E4E4E7 !important;
+}
+
+.dark .text-gray-700 {
+  color: #D4D4D8 !important;
+}
+
+.dark .text-gray-600 {
+  color: #A1A1AA !important;
+}
+
+.dark .text-gray-500 {
+  color: #71717A !important;
+}
+
+.dark .text-gray-400 {
+  color: #71717A !important;
+}
+
+.dark .border-gray-100, .dark .border-gray-200 {
+  border-color: var(--border) !important;
+}
+
+.dark header {
+  background-color: var(--card) !important;
+  border-color: var(--border) !important;
+}
+
+.dark input, .dark select, .dark textarea {
+  background-color: #242427 !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+}
+
+.dark input::placeholder, .dark textarea::placeholder {
+  color: #52525B !important;
+}
+
+.dark .glass {
+  background-color: rgba(24, 24, 27, 0.7) !important;
+  border-color: rgba(39, 39, 42, 0.4) !important;
+  color: var(--foreground) !important;
+}
+
 @layer utilities {
   .glass {
     @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-sm;

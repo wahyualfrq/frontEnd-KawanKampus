@@ -18,6 +18,7 @@ import TaskForm from './TaskForm';
 import TaskSummary from './TaskSummary';
 import { Plus, Filter, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { usePreferences } from '../../context/PreferencesContext';
 
 const COLUMNS = [
   { id: 'TODO', title: 'To Do' },
@@ -26,6 +27,7 @@ const COLUMNS = [
 ];
 
 export default function KanbanBoard() {
+  const { t } = usePreferences();
   const { tasks, groupedTasks, setTasks, addTask, updateTask, deleteTask, moveTask } = useTaskStore();
   const [activeTask, setActiveTask] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);

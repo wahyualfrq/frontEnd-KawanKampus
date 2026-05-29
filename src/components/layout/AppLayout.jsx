@@ -1,8 +1,18 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { Search, Bell, MessageSquare, ChevronDown } from 'lucide-react';
+import useAuthStore from '../../store/authStore';
+import { usePreferences } from '../../context/PreferencesContext';
 
 export default function AppLayout() {
+  const { user } = useAuthStore();
+  const { t } = usePreferences();
+
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+  };
+
   return (
     <div className="flex h-screen w-full bg-[#F9FAFB] overflow-hidden">
       <Sidebar />
@@ -15,7 +25,7 @@ export default function AppLayout() {
             </div>
             <input 
               type="text" 
-              placeholder="Cari tempat di sekitar kampus..." 
+              placeholder={t('search_placeholder')} 
               className="w-full bg-white pl-13 pr-10 py-3 rounded-full border border-gray-200 shadow-soft focus:outline-none focus:ring-4 focus:ring-[#FD6825]/5 focus:border-[#FD6825] transition-all text-sm font-medium"
             />
             <div className="absolute inset-y-0 right-5 flex items-center pointer-events-none">
@@ -37,12 +47,16 @@ export default function AppLayout() {
             <div className="h-8 w-[1.5px] bg-gray-200 mx-1"></div>
             
             <div className="flex items-center gap-3.5 cursor-pointer group hover:bg-gray-50 p-1.5 pr-3 rounded-2xl transition-all">
-              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm ring-1 ring-gray-100">
-                <img src="https://ui-avatars.com/api/?name=Wahyu&background=random" alt="Avatar" />
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm ring-1 ring-gray-100 bg-[#FD6825] text-white flex items-center justify-center font-black text-sm">
+                {user?.avatarUrl ? (
+                  <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  getInitials(user?.name)
+                )}
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-bold text-gray-900">Wahyu</span>
-                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Mahasiswa</span>
+                <span className="text-xs font-bold text-gray-900">{user?.name || 'User'}</span>
+                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{t('mahasiswa')}</span>
               </div>
               <ChevronDown size={14} className="text-gray-400 group-hover:text-gray-600 transition-transform group-hover:translate-y-0.5" />
             </div>
@@ -59,7 +73,7 @@ export default function AppLayout() {
            <MessageSquare size={20} className="group-hover:rotate-12 transition-transform" />
            <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full border border-white"></span>
         </div>
-        <span className="font-bold text-sm tracking-tight">Tanya AI</span>
+        <span className="font-bold text-sm tracking-tight">{t('tanya_ai')}</span>
       </button>
     </div>
   );
