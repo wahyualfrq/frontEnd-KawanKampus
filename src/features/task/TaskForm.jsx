@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { X, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePreferences } from '../../context/PreferencesContext';
 
 export default function TaskForm({ isOpen, onClose, onSubmit, initialStatus = 'TODO' }) {
+  const { t } = usePreferences();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState(initialStatus);
@@ -34,7 +36,7 @@ export default function TaskForm({ isOpen, onClose, onSubmit, initialStatus = 'T
             className="relative w-full max-w-md bg-white rounded-[24px] shadow-medium border border-gray-100 overflow-hidden"
           >
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
-              <h3 className="text-lg font-bold text-gray-900">Tambah Tugas Baru</h3>
+              <h3 className="text-lg font-bold text-gray-900">{t('add_new_task')}</h3>
               <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
                 <X size={20} />
               </button>
@@ -42,23 +44,23 @@ export default function TaskForm({ isOpen, onClose, onSubmit, initialStatus = 'T
 
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Judul Tugas</label>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">{t('task_title')}</label>
                 <input
                   type="text"
                   autoFocus
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Contoh: Riset topik tugas akhir"
+                  placeholder={t('task_title_placeholder')}
                   className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-primary/5 focus:border-primary outline-none transition-all text-sm font-bold"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Deskripsi (Opsional)</label>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">{t('task_description')}</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Tambahkan detail tugas..."
+                  placeholder={t('task_description_placeholder')}
                   rows={3}
                   className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-primary/5 focus:border-primary outline-none transition-all text-sm font-medium"
                 />
@@ -76,7 +78,7 @@ export default function TaskForm({ isOpen, onClose, onSubmit, initialStatus = 'T
                         : 'bg-white text-gray-500 border-gray-100 hover:bg-gray-50'
                     }`}
                   >
-                    {s.replace('_', ' ')}
+                    {s === 'TODO' ? t('todo') : s === 'IN_PROGRESS' ? t('in_progress') : t('done')}
                   </button>
                 ))}
               </div>
@@ -86,7 +88,7 @@ export default function TaskForm({ isOpen, onClose, onSubmit, initialStatus = 'T
                 className="w-full bg-primary hover:bg-primary-hover py-4 rounded-[16px] text-white font-bold flex items-center justify-center gap-3 shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-95 transition-all mt-4"
               >
                 <Send size={18} />
-                Simpan Tugas
+                {t('save_task')}
               </button>
             </form>
           </motion.div>

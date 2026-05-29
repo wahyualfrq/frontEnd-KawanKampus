@@ -8,8 +8,10 @@ import {
   Clock
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { usePreferences } from '../../context/PreferencesContext';
 
 export default function TaskCard({ task, isOverlay, onDelete }) {
+  const { t, preferences } = usePreferences();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
 
   const style = {
@@ -26,15 +28,16 @@ export default function TaskCard({ task, isOverlay, onDelete }) {
   const config = statusConfig[task.status] || statusConfig.TODO;
 
   const formatDate = (dateString) => {
-    if (!dateString) return '25 Mei 2024';
+    if (!dateString) return preferences.language === 'en' ? 'May 25, 2024' : '25 Mei 2024';
     try {
-      return new Date(dateString).toLocaleDateString('id-ID', {
+      const locale = preferences.language === 'en' ? 'en-US' : 'id-ID';
+      return new Date(dateString).toLocaleDateString(locale, {
         day: '2-digit',
         month: 'short',
         year: 'numeric'
       });
     } catch (e) {
-      return '25 Mei 2024';
+      return preferences.language === 'en' ? 'May 25, 2024' : '25 Mei 2024';
     }
   };
 
@@ -59,7 +62,7 @@ export default function TaskCard({ task, isOverlay, onDelete }) {
             config.bg,
             config.color
           )}>
-            {task.category || 'Akademik'}
+            {task.category === 'Akademik' ? t('academic') : (task.category || t('academic'))}
           </span>
           <button
             onClick={(e) => {
@@ -81,8 +84,8 @@ export default function TaskCard({ task, isOverlay, onDelete }) {
         {task.status === 'IN_PROGRESS' && (
            <div className="space-y-1.5">
               <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase">
-                 <span>Progres</span>
-                 <span>{task.progress || 60}%</span>
+                  <span>{t('progress')}</span>
+                  <span>{task.progress || 60}%</span>
               </div>
               <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                  <div 

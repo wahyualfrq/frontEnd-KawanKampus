@@ -5,39 +5,41 @@ import {
   LayoutList 
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { usePreferences } from '../../context/PreferencesContext';
 
 export default function TaskSummary({ tasks = [] }) {
+  const { t } = usePreferences();
   const taskArray = Array.isArray(tasks) ? tasks : [];
   
   const stats = [
     {
-      label: 'Total Tugas',
+      label: t('total_tugas'),
       value: taskArray.length,
-      desc: 'Semua tugas Anda',
+      desc: t('all_tasks_desc'),
       icon: LayoutList,
       color: 'bg-orange-50 text-orange-600',
       iconBg: 'bg-orange-100',
     },
     {
-      label: 'Sedang Dikerjakan',
+      label: t('sedang_dikerjakan'),
       value: taskArray.filter(t => t.status === 'IN_PROGRESS').length,
-      desc: 'Tugas dalam proses',
+      desc: t('tasks_in_progress_desc'),
       icon: Briefcase,
       color: 'bg-purple-50 text-purple-600',
       iconBg: 'bg-purple-100',
     },
     {
-      label: 'Belum Dikerjakan',
+      label: t('belum_dikerjakan'),
       value: taskArray.filter(t => t.status === 'TODO').length,
-      desc: 'Tugas menunggu',
+      desc: t('tasks_pending_desc'),
       icon: Clock,
       color: 'bg-yellow-50 text-yellow-600',
       iconBg: 'bg-yellow-100',
     },
     {
-      label: 'Selesai',
+      label: t('selesai'),
       value: taskArray.filter(t => t.status === 'DONE').length,
-      desc: 'Tugas terselesaikan',
+      desc: t('tasks_completed_desc'),
       icon: CheckCircle,
       color: 'bg-emerald-50 text-emerald-600',
       iconBg: 'bg-emerald-100',
@@ -46,7 +48,7 @@ export default function TaskSummary({ tasks = [] }) {
 
   return (
     <div className="space-y-6 pt-10">
-      <h2 className="text-xl font-bold text-gray-900">Ringkasan Tugas</h2>
+      <h2 className="text-xl font-bold text-gray-900">{t('ringkasan_tugas')}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => (
           <div 
