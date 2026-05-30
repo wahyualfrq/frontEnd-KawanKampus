@@ -219,6 +219,10 @@ const placesService = {
       ...(session_id && { session_id }),
     });
 
+    if (response.data && response.data.success === false && response.data.code === 'PLACE_RECOMMENDER_NOT_CONFIGURED') {
+      return response.data;
+    }
+
     const raw  = response.data?.data || response.data;
     const list = Array.isArray(raw) ? raw : [];
 

@@ -508,8 +508,14 @@ export default function PlacesPage() {
         lat: loc.lat,
         lon: loc.lon,
       });
-      setPlaces(results);
-      if (results.length > 0) setSelectedPlace(results[0]);
+      if (results && results.success === false && results.code === 'PLACE_RECOMMENDER_NOT_CONFIGURED') {
+        setError('PLACE_RECOMMENDER_NOT_CONFIGURED');
+        setPlaces([]);
+        setSelectedPlace(null);
+      } else {
+        setPlaces(results);
+        if (results.length > 0) setSelectedPlace(results[0]);
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal mendapatkan rekomendasi. Coba lagi.');
     } finally {
@@ -651,10 +657,43 @@ export default function PlacesPage() {
       )}
 
       {/* Error */}
-      {error && (
+      {error && error !== 'PLACE_RECOMMENDER_NOT_CONFIGURED' && (
         <div className="flex items-center gap-2 text-sm text-red-500 bg-red-50 px-4 py-3 rounded-xl border border-red-100">
           <AlertCircle size={15}/> {error}
         </div>
+      )}
+
+      {/* Recommender Service Not Configured State */}
+      {!loading && error === 'PLACE_RECOMMENDER_NOT_CONFIGURED' && (
+        <motion.div 
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center justify-center py-14 px-6 text-center bg-white rounded-[28px] border border-gray-100 shadow-medium max-w-2xl mx-auto space-y-5"
+        >
+          <div className="w-16 h-16 rounded-[22px] bg-[#FFF8EC] border border-[#FDC439]/30 flex items-center justify-center text-[#FD6825] shadow-sm">
+            <AlertCircle size={32} />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-xl font-black text-gray-900 tracking-tight">
+              Layanan rekomendasi tempat belum terhubung
+            </h3>
+            <p className="text-sm font-medium text-gray-500 max-w-md mx-auto leading-relaxed">
+              Fitur Peta sudah siap, tetapi service rekomendasi tempat terpisah belum dikonfigurasi.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              if (userLocation) {
+                runSearch(userLocation, getApiCat(activeChip, activeLainnya));
+              } else {
+                handleCampusDemo();
+              }
+            }}
+            className="bg-[#FD6825] hover:bg-[#E85A1D] px-7 py-3 rounded-full text-xs font-bold text-white shadow-lg shadow-[#FD6825]/25 hover:scale-105 active:scale-95 transition-all"
+          >
+            Coba Lagi
+          </button>
+        </motion.div>
       )}
 
       {/* Loading */}
