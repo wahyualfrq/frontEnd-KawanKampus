@@ -141,39 +141,44 @@ export default function KanbanBoard() {
   }
 
   return (
-    <div className="flex flex-col space-y-8 animate-in fade-in duration-700">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('kanban_tugas')}</h1>
-          <p className="text-sm text-gray-500 font-medium">{t('kelola_pantau')}</p>
+    <div className="flex flex-col min-h-screen animate-in fade-in duration-700">
+      {/* Header & Action Bar */}
+      <div className="mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('kanban_tugas')}</h1>
+            <p className="text-sm text-gray-500 font-medium">{t('kelola_pantau')}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 shadow-soft hover:bg-gray-50 transition-all">
+              <Filter size={16} />
+              {t('filter')}
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 shadow-soft hover:bg-gray-50 transition-all">
+              {t('semua_kategori')} <ChevronDown size={16} className="text-gray-400" />
+            </button>
+            <button 
+              onClick={() => openForm()}
+              className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold shadow-lg shadow-primary/20 transition-all"
+            >
+              <Plus size={18} />
+              {t('tambah_tugas')}
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 shadow-soft hover:bg-gray-50 transition-all">
-            <Filter size={16} />
-            {t('filter')}
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 shadow-soft hover:bg-gray-50 transition-all">
-            {t('semua_kategori')} <ChevronDown size={16} className="text-gray-400" />
-          </button>
-          <button 
-            onClick={() => openForm()}
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold shadow-lg shadow-primary/20 transition-all"
-          >
-            <Plus size={18} />
-            {t('tambah_tugas')}
-          </button>
-        </div>
+
+        {/* Summary Mini (Sticky Compact) */}
+        <TaskSummary tasks={tasks} />
       </div>
 
-      {/* Board */}
+      {/* Board - MAIN FOCUS */}
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex flex-col md:flex-row gap-8 overflow-x-auto pb-4 scrollbar-hide">
+        <div className="flex flex-col md:flex-row gap-6 overflow-x-auto pb-8 scrollbar-hide min-h-[calc(100vh-300px)]">
           {COLUMNS.map((col) => (
             <KanbanColumn
               key={col.id}
@@ -190,9 +195,6 @@ export default function KanbanBoard() {
           {activeTask ? <TaskCard task={activeTask} isOverlay /> : null}
         </DragOverlay>
       </DndContext>
-
-      {/* Summary */}
-      <TaskSummary tasks={tasks} />
 
       {/* Modal Form */}
       <TaskForm 

@@ -46,19 +46,19 @@ export default function TaskCard({ task, isOverlay, onDelete }) {
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group relative bg-white p-5 rounded-[16px] border border-gray-100 shadow-soft transition-all duration-200",
+        "group relative bg-white p-4 rounded-[16px] border border-gray-100 shadow-sm transition-all duration-200",
         isDragging && "opacity-50",
-        isOverlay && "rotate-2 scale-105 shadow-medium border-primary z-50 cursor-grabbing",
-        !isOverlay && "cursor-grab hover:border-primary/20 hover:shadow-medium"
+        isOverlay && "rotate-2 scale-105 shadow-xl border-primary z-50 cursor-grabbing",
+        !isOverlay && "cursor-grab hover:border-primary/20 hover:shadow-md hover:-translate-y-1"
       )}
       {...attributes}
       {...listeners}
     >
-      <div className="space-y-4">
-        {/* Category & Action */}
+      <div className="space-y-3">
+        {/* Category Badge */}
         <div className="flex items-center justify-between">
           <span className={cn(
-            "text-[10px] font-bold px-2 py-0.5 rounded-lg uppercase tracking-wider",
+            "text-[9px] font-bold px-2 py-0.5 rounded-lg uppercase tracking-wider",
             config.bg,
             config.color
           )}>
@@ -71,12 +71,12 @@ export default function TaskCard({ task, isOverlay, onDelete }) {
             }}
             className="text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-1"
           >
-            <Trash2 size={14} />
+            <Trash2 size={12} />
           </button>
         </div>
 
         {/* Title */}
-        <h4 className="text-sm font-bold text-gray-900 leading-relaxed pr-2">
+        <h4 className="text-sm font-bold text-gray-900 leading-snug">
           {task.title}
         </h4>
 
@@ -95,20 +95,23 @@ export default function TaskCard({ task, isOverlay, onDelete }) {
               </div>
            </div>
         )}
-
         {/* Footer */}
-        <div className="flex items-center justify-between pt-2 border-t border-gray-50">
-          <div className="flex items-center gap-2 text-gray-400">
-            <Calendar size={14} />
+        <div className="flex items-center justify-between pt-3 mt-1 border-t border-gray-50">
+          <div className="flex items-center gap-1.5 text-gray-400">
+            <Calendar size={12} />
             <span className="text-[10px] font-bold">
               {formatDate(task.createdAt)}
             </span>
           </div>
-          <div className="flex -space-x-2">
-            <img className="w-6 h-6 rounded-full border-2 border-white" src={`https://ui-avatars.com/api/?name=${task.assignee || 'User'}&background=random`} alt="Avatar" />
+          <div className="flex items-center -space-x-1.5">
+            <img 
+              className="w-5 h-5 rounded-full border-2 border-white shadow-sm" 
+              src={`https://ui-avatars.com/api/?name=${task.assignee || 'User'}&background=random&color=fff&size=128`} 
+              alt="Avatar" 
+            />
             {task.status === 'DONE' && (
-              <div className="w-6 h-6 rounded-full border-2 border-white bg-emerald-500 flex items-center justify-center text-white">
-                <CheckCircle2 size={12} />
+              <div className="w-5 h-5 rounded-full border-2 border-white bg-emerald-500 flex items-center justify-center text-white shadow-sm">
+                <CheckCircle2 size={10} />
               </div>
             )}
           </div>
@@ -116,8 +119,8 @@ export default function TaskCard({ task, isOverlay, onDelete }) {
       </div>
       
       {/* Drag Handle indicator */}
-      <div className="absolute top-2 right-2 text-gray-200 opacity-0 group-hover:opacity-100 transition-opacity">
-        <GripVertical size={16} />
+      <div className="absolute top-2 right-2 text-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
+        <GripVertical size={14} />
       </div>
     </div>
   );

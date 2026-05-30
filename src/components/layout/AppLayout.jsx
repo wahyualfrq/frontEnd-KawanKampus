@@ -110,7 +110,7 @@ export default function AppLayout() {
       <Sidebar />
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Top Navigation Bar */}
-        <header className="h-20 shrink-0 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-200 z-30">
+        <header className="h-20 shrink-0 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-200 z-40">
           <div className="relative w-[440px]">
             <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-gray-400">
               <Search size={18} />
@@ -289,14 +289,6 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
-
-      <button className="fixed bottom-8 right-8 ai-gradient text-white flex items-center gap-3 px-6 py-4 rounded-full shadow-medium hover:scale-110 active:scale-95 hover:-translate-y-1 transition-all z-50 group">
-        <div className="relative">
-           <MessageSquare size={20} className="group-hover:rotate-12 transition-transform" />
-           <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full border border-white"></span>
-        </div>
-        <span className="font-bold text-sm tracking-tight">{t('tanya_ai')}</span>
-      </button>
     </div>
   );
 }

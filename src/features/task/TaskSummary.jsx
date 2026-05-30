@@ -17,66 +17,53 @@ export default function TaskSummary({ tasks = [] }) {
       value: taskArray.length,
       desc: t('all_tasks_desc'),
       icon: LayoutList,
-      color: 'bg-orange-50 text-orange-600',
-      iconBg: 'bg-orange-100',
+      color: 'text-gray-500',
+      bgColor: 'bg-gray-100',
     },
     {
       label: t('sedang_dikerjakan'),
       value: taskArray.filter(t => t.status === 'IN_PROGRESS').length,
       desc: t('tasks_in_progress_desc'),
       icon: Briefcase,
-      color: 'bg-purple-50 text-purple-600',
-      iconBg: 'bg-purple-100',
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-100',
     },
     {
       label: t('belum_dikerjakan'),
       value: taskArray.filter(t => t.status === 'TODO').length,
       desc: t('tasks_pending_desc'),
       icon: Clock,
-      color: 'bg-yellow-50 text-yellow-600',
-      iconBg: 'bg-yellow-100',
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-100',
     },
     {
       label: t('selesai'),
       value: taskArray.filter(t => t.status === 'DONE').length,
       desc: t('tasks_completed_desc'),
       icon: CheckCircle,
-      color: 'bg-emerald-50 text-emerald-600',
-      iconBg: 'bg-emerald-100',
+      color: 'text-emerald-600',
+      bgColor: 'bg-emerald-100',
     },
   ];
 
   return (
-    <div className="space-y-6 pt-10">
-      <h2 className="text-xl font-bold text-gray-900">{t('ringkasan_tugas')}</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => (
-          <div 
-            key={stat.label}
-            className={cn(
-              "flex items-center p-6 rounded-[24px] shadow-soft border border-white transition-all hover:shadow-medium hover:-translate-y-1",
-              stat.color.split(' ')[0] // Using the bg-color for the card
-            )}
-          >
-            <div className={cn(
-              "w-12 h-12 rounded-2xl flex items-center justify-center mr-5",
-              stat.iconBg
-            )}>
-              <stat.icon size={24} className={stat.color.split(' ')[1]} />
+    <div className="sticky top-[-32px] z-30 bg-white/80 backdrop-blur-md border-b border-gray-100 -mx-8 px-8 py-3 mb-8 -mt-2">
+      <div className="flex items-center gap-6">
+        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mr-2">{t('ringkasan_tugas')}</span>
+        <div className="flex items-center gap-4">
+          {stats.map((stat) => (
+            <div 
+              key={stat.label}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-gray-50 shadow-sm"
+            >
+              <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", stat.bgColor)}>
+                <stat.icon size={10} className={stat.color} />
+              </div>
+              <span className="text-xs font-bold text-gray-900">{stat.value}</span>
+              <span className="text-[10px] font-medium text-gray-500">{stat.label}</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold text-gray-900 leading-none mb-1">
-                {stat.value}
-              </span>
-              <span className="text-xs font-bold text-gray-900/80 mb-0.5">
-                {stat.label}
-              </span>
-              <span className="text-[10px] font-medium text-gray-500">
-                {stat.desc}
-              </span>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

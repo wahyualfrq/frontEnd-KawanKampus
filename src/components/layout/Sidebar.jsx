@@ -1,20 +1,18 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Map as MapIcon, 
   LayoutDashboard, 
   MessageSquare, 
   Heart, 
   History, 
-  Settings, 
-  LogOut 
+  Settings
 } from 'lucide-react';
-import useAuthStore from '../../store/authStore';
 import { cn } from '../../utils/cn';
 import { usePreferences } from '../../context/PreferencesContext';
 
 export default function Sidebar() {
   const location = useLocation();
-  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
   const { t } = usePreferences();
 
   const navigation = [
@@ -79,36 +77,16 @@ export default function Sidebar() {
             <p className="text-[10px] text-gray-500 mb-3 leading-relaxed">
               {t('ask_ai_desc')}
             </p>
-            <button className="w-full py-2 bg-[#FD6825] hover:bg-[#E85A1D] text-white text-[10px] font-bold rounded-xl transition-all shadow-lg shadow-[#FD6825]/20">
+            <button 
+              onClick={() => navigate('/chatbot')}
+              className="w-full py-2 bg-[#FD6825] hover:bg-[#E85A1D] text-white text-[10px] font-bold rounded-xl transition-all shadow-lg shadow-[#FD6825]/20"
+            >
               {t('start_chat')}
             </button>
           </div>
         </div>
       </div>
 
-      <div className="border-t border-white/10 p-5 bg-black/10">
-        <div className="flex items-center w-full justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full overflow-hidden border border-white/10 bg-[#FD6825] text-white flex items-center justify-center font-black text-xs">
-              {user?.avatarUrl ? (
-                <img src={user.avatarUrl} alt="User" className="w-full h-full object-cover" />
-              ) : (
-                user?.name ? user.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : 'U'
-              )}
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xs font-bold">{user?.name || 'User'}</span>
-              <span className="text-[10px] text-gray-500 font-medium">{t('mahasiswa')}</span>
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            className="text-gray-500 hover:text-red-400 transition-colors p-2"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
