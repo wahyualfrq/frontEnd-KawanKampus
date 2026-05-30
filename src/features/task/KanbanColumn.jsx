@@ -3,8 +3,10 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import TaskCard from './TaskCard';
 import { Plus, MoreVertical } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { usePreferences } from '../../context/PreferencesContext';
 
 export default function KanbanColumn({ id, title, tasks, onAddTask, onDeleteTask }) {
+  const { t } = usePreferences();
   const { setNodeRef, isOver } = useDroppable({ id });
 
   const columnConfig = {
@@ -64,7 +66,7 @@ export default function KanbanColumn({ id, title, tasks, onAddTask, onDeleteTask
         
         {tasks.length === 0 && !isOver && (
           <div className="flex-1 flex flex-col items-center justify-center opacity-40 border-2 border-dashed border-gray-300 rounded-2xl p-8">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Belum ada tugas</p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('no_tasks')}</p>
           </div>
         )}
 
@@ -74,7 +76,7 @@ export default function KanbanColumn({ id, title, tasks, onAddTask, onDeleteTask
           className="mt-2 flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400 hover:bg-white/50 transition-all text-xs font-bold"
         >
           <Plus size={14} />
-          Tambah tugas
+          {t('tambah_tugas')}
         </button>
       </div>
     </div>

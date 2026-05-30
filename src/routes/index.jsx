@@ -6,6 +6,9 @@ import RegisterPage from '../pages/Register';
 import DashboardPage from '../pages/Dashboard';
 import ChatbotPage from '../pages/Chatbot';
 import PlacesPage from '../pages/Places';
+import SettingsPage from '../pages/Settings';
+import FavoritesPage from '../pages/Favorites';
+import HistoryPage from '../pages/History';
 
 const PrivateRoute = ({ children }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -49,6 +52,9 @@ export default function AppRoutes() {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="chatbot" element={<ChatbotPage />} />
         <Route path="places" element={<PlacesPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+        <Route path="favorites" element={<FavoritesPage />} />
+        <Route path="history" element={<HistoryPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />

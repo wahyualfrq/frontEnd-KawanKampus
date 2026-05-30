@@ -18,6 +18,8 @@ import TaskForm from './TaskForm';
 import TaskSummary from './TaskSummary';
 import { Plus, Filter, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { usePreferences } from '../../context/PreferencesContext';
+import historyService from '../../services/history.service';
 
 const COLUMNS = [
   { id: 'TODO', title: 'To Do' },
@@ -26,6 +28,7 @@ const COLUMNS = [
 ];
 
 export default function KanbanBoard() {
+  const { t } = usePreferences();
   const { tasks, groupedTasks, setTasks, addTask, updateTask, deleteTask, moveTask } = useTaskStore();
   const [activeTask, setActiveTask] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -48,13 +51,27 @@ export default function KanbanBoard() {
     onSuccess: (newTask) => {
       addTask(newTask);
       queryClient.invalidateQueries(['tasks']);
+      try {
+        historyService.createHistory('CREATED_TASK', { taskId: newTask.id, title: newTask.title });
+      } catch (e) {
+        console.warn('[KanbanBoard] Failed to log task creation history:', e);
+      }
     }
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => taskService.updateTask(id, data),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries(['tasks']);
+      try {
+        const task = tasks.find(t => t.id === variables.id);
+        const title = task ? task.title : '';
+        const isCompleted = variables.data.status === 'DONE';
+        const action = isCompleted ? 'COMPLETED_TASK' : 'UPDATED_TASK';
+        historyService.createHistory(action, { taskId: variables.id, title });
+      } catch (e) {
+        console.warn('[KanbanBoard] Failed to log task update history:', e);
+      }
     }
   });
 
@@ -110,7 +127,7 @@ export default function KanbanBoard() {
   };
 
   const handleDeleteTask = (id) => {
-    if (window.confirm('Hapus tugas ini?')) {
+    if (window.confirm(t('hapus_tugas_confirm') || 'Hapus tugas ini?')) {
       deleteMutation.mutate(id);
     }
   };
@@ -128,23 +145,23 @@ export default function KanbanBoard() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Kanban Tugas</h1>
-          <p className="text-sm text-gray-500 font-medium">Kelola dan pantau semua tugasmu dengan mudah</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('kanban_tugas')}</h1>
+          <p className="text-sm text-gray-500 font-medium">{t('kelola_pantau')}</p>
         </div>
         <div className="flex items-center gap-3">
           <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 shadow-soft hover:bg-gray-50 transition-all">
             <Filter size={16} />
-            Filter
+            {t('filter')}
           </button>
           <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 shadow-soft hover:bg-gray-50 transition-all">
-            Semua Kategori <ChevronDown size={16} className="text-gray-400" />
+            {t('semua_kategori')} <ChevronDown size={16} className="text-gray-400" />
           </button>
           <button 
             onClick={() => openForm()}
             className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold shadow-lg shadow-primary/20 transition-all"
           >
             <Plus size={18} />
-            Tambah Tugas
+            {t('tambah_tugas')}
           </button>
         </div>
       </div>
@@ -161,7 +178,7 @@ export default function KanbanBoard() {
             <KanbanColumn
               key={col.id}
               id={col.id}
-              title={col.title}
+              title={col.id === 'TODO' ? t('todo') : col.id === 'IN_PROGRESS' ? t('in_progress') : col.id === 'DONE' ? t('done') : col.title}
               tasks={groupedTasks[col.id] || []}
               onAddTask={openForm}
               onDeleteTask={handleDeleteTask}
