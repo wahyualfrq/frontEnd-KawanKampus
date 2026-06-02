@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  MapPin, Navigation, Star, Bookmark, Share2, ChevronDown,
-  Printer, Book, Utensils, Coffee, Grid, Loader2, Bot,
-  AlertCircle, ExternalLink, Search, Target, X
+  MapPin, Star, Bookmark, Share2, ChevronDown,
+  Printer, Book, Utensils, Coffee, Grid, Loader2,
+  AlertCircle, ExternalLink, Search, X, Plus, Minus, Crosshair, Navigation
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../utils/cn';
@@ -36,131 +36,247 @@ function getChip(id) {
 function resolveApiCat(chipId, cfg) {
   const apiValues = cfg?.categoryApiValue || {};
   if (apiValues[chipId]) return apiValues[chipId];
-  const defaults = { fotokopi:'Fotokopi', makanan:'Makanan', minuman:'Cafe', atk:'Print', all:'Fotokopi' };
+  const defaults = { fotokopi:'Fotokopi', makanan:'Makanan', minuman:'Cafe', atk:'Print', all:'Semua' };
   if (defaults[chipId]) return defaults[chipId];
   return chipId; // Lainnya raw category → send as-is
 }
 
-// ── Decorative pin positions ──────────────────────────────────────────────────
+// ── Decorative pin positions (fallback) ──────────────────────────────────────
 const PIN_POS = [
   { top:'19%', left:'26%' }, { top:'15%', left:'52%' },
   { top:'18%', left:'70%' }, { top:'63%', left:'20%' },
   { top:'65%', left:'62%' }, { top:'40%', left:'78%' },
 ];
 
+function getMarkerPosition(place, centerCoords) {
+  if (!place || place.lat == null || place.lon == null || !centerCoords) {
+    const idx = place?.rank || 1;
+    return PIN_POS[idx - 1] || { top: '30%', left: '30%' };
+  }
+
+  const latDiff = parseFloat(place.lat) - parseFloat(centerCoords.lat);
+  const lonDiff = parseFloat(place.lon) - parseFloat(centerCoords.lon);
+
+  // A typical diff for 1km is around 0.009. Let's scale it.
+  const scale = 3500;
+  let leftPercent = 50 + (lonDiff * scale * 1.1);
+  let topPercent = 44 - (latDiff * scale);
+
+  leftPercent = Math.max(8, Math.min(92, leftPercent));
+  topPercent = Math.max(8, Math.min(92, topPercent));
+
+  return {
+    top: `${topPercent}%`,
+    left: `${leftPercent}%`
+  };
+}
+
 // ── Map placeholder ───────────────────────────────────────────────────────────
-function MapPlaceholder({ places, hasLocation, onLocate, locating, onCampusDemo, selectedUni }) {
-  const { t } = usePreferences();
+function MapPlaceholder({ places, selectedUni, zoom, setZoom, centerCoords, panOffset, setPanOffset, onSelectPlace, selectedPlace }) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return; // only left click drag
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    setPanOffset({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
   return (
-    <div className="relative w-full rounded-[24px] overflow-hidden shadow-medium border-4 border-white" style={{ height:420 }}>
-      <div className="absolute inset-0" style={{ background:'#eae8df' }}>
-        <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
-          <rect width="100%" height="100%" fill="#eae8df"/>
-          <rect x="0"   y="0"   width="23%" height="12%" fill="#e2dfd5"/>
-          <rect x="25%" y="0"   width="18%" height="12%" fill="#e2dfd5"/>
-          <rect x="65%" y="0"   width="35%" height="12%" fill="#e2dfd5"/>
-          <rect x="0"   y="80%" width="35%" height="20%" fill="#e2dfd5"/>
-          <rect x="37%" y="80%" width="28%" height="20%" fill="#e2dfd5"/>
-          <rect x="67%" y="67%" width="33%" height="33%" fill="#e2dfd5"/>
-          <rect x="35%" y="28%" width="26%" height="34%" rx="6" fill="#c9e3b0" stroke="#b2d494" strokeWidth="1.5"/>
-          <line x1="0"   y1="13%"  x2="100%" y2="13%"  stroke="#fff" strokeWidth="10"/>
-          <line x1="0"   y1="62%"  x2="100%" y2="62%"  stroke="#fff" strokeWidth="10"/>
-          <line x1="24%" y1="0"    x2="24%"  y2="100%" stroke="#fff" strokeWidth="10"/>
-          <line x1="62%" y1="0"    x2="62%"  y2="100%" stroke="#fff" strokeWidth="10"/>
-          <line x1="0"   y1="43%"  x2="100%" y2="43%"  stroke="#d5d1c8" strokeWidth="4"/>
-          <line x1="0"   y1="79%"  x2="100%" y2="79%"  stroke="#d5d1c8" strokeWidth="4"/>
-          <line x1="43%" y1="0"    x2="43%"  y2="100%" stroke="#d5d1c8" strokeWidth="4"/>
-          <line x1="80%" y1="0"    x2="80%"  y2="100%" stroke="#d5d1c8" strokeWidth="4"/>
-          <line x1="10%" y1="0"    x2="10%"  y2="100%" stroke="#dbd8cf" strokeWidth="3"/>
-        </svg>
+    <div className="relative w-full rounded-[30px] overflow-hidden shadow-medium border-4 border-white bg-[#FAF8F5]" style={{ height: 420 }}>
+      {/* Map Viewport wrapper */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Scaled/zoomed/panned content container */}
+        <div 
+          className={cn(
+            "absolute inset-0 select-none",
+            !isDragging && "transition-transform duration-300 ease-out"
+          )}
+          style={{
+            transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`,
+            transformOrigin: 'center center',
+            cursor: isDragging ? 'grabbing' : 'grab'
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
+          {/* SVG Map Background */}
+          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100%" height="100%" fill="#FAF8F5"/>
+            <defs>
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#EAE6DF" strokeWidth="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" opacity="0.6"/>
 
-        {/* Campus label */}
-        <div className="absolute" style={{ top:'41%', left:'47%', transform:'translate(-50%,-50%)', zIndex:5 }}>
-          <div className="bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-xl text-[11px] font-bold text-gray-700 shadow-sm whitespace-nowrap border border-white/60">
-            {selectedUni || 'Pilih Kampus'}
+            {/* Green park areas (campus gardens/forests) */}
+            <path d="M 150 50 Q 220 20 300 70 T 450 60 L 520 250 Q 400 350 250 280 Z" fill="#E8F4E5" stroke="#D5EDD0" strokeWidth="1.5"/>
+            <path d="M 50 250 Q 120 280 180 200 T 250 320 L 120 400 Z" fill="#E8F4E5" stroke="#D5EDD0" strokeWidth="1.5"/>
+            <rect x="65%" y="60%" width="28%" height="32%" rx="20" fill="#E2F0DD" stroke="#D5EDD0" strokeWidth="1.5"/>
+            
+            {/* Campus Lake / River */}
+            <path d="M 0 350 Q 200 300 350 340 T 700 280 L 700 320 T 350 380 Q 200 340 0 390 Z" fill="#DCEEF9" opacity="0.8"/>
+            <path d="M 0 350 Q 200 300 350 340 T 700 280" fill="none" stroke="#B9DDF3" strokeWidth="1.5"/>
+
+            {/* Secondary streets */}
+            <line x1="50" y1="0" x2="50" y2="420" stroke="#F1EFEA" strokeWidth="6"/>
+            <line x1="300" y1="0" x2="300" y2="420" stroke="#F1EFEA" strokeWidth="6"/>
+            <line x1="600" y1="0" x2="600" y2="420" stroke="#F1EFEA" strokeWidth="6"/>
+            <line x1="0" y1="180" x2="700" y2="180" stroke="#F1EFEA" strokeWidth="6"/>
+            <line x1="0" y1="280" x2="700" y2="280" stroke="#F1EFEA" strokeWidth="6"/>
+
+            {/* Main roads */}
+            <path d="M 0 100 L 700 100" fill="none" stroke="#EAE6DF" strokeWidth="14"/>
+            <path d="M 0 100 L 700 100" fill="none" stroke="#FFFFFF" strokeWidth="10"/>
+            
+            <path d="M 400 0 L 400 420" fill="none" stroke="#EAE6DF" strokeWidth="14"/>
+            <path d="M 400 0 L 400 420" fill="none" stroke="#FFFFFF" strokeWidth="10"/>
+
+            <path d="M 120 0 L 120 420" fill="none" stroke="#EAE6DF" strokeWidth="10"/>
+            <path d="M 120 0 L 120 420" fill="none" stroke="#FFFFFF" strokeWidth="6"/>
+
+            {/* Building blocks */}
+            <g transform="translate(180, 80)">
+              <rect width="60" height="40" rx="4" fill="#F0ECE1" stroke="#E5DEC9" strokeWidth="1.5" style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.03))' }}/>
+              <text x="30" y="24" fill="#A89E84" fontSize="8" fontWeight="bold" textAnchor="middle" letterSpacing="1">LIB</text>
+            </g>
+            <g transform="translate(480, 120)">
+              <rect width="70" height="35" rx="4" fill="#F0ECE1" stroke="#E5DEC9" strokeWidth="1.5" style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.03))' }}/>
+              <text x="35" y="22" fill="#A89E84" fontSize="8" fontWeight="bold" textAnchor="middle" letterSpacing="1">ENG</text>
+            </g>
+            <g transform="translate(460, 290)">
+              <rect width="60" height="45" rx="4" fill="#F0ECE1" stroke="#E5DEC9" strokeWidth="1.5" style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.03))' }}/>
+              <text x="30" y="26" fill="#A89E84" fontSize="8" fontWeight="bold" textAnchor="middle" letterSpacing="1">SCI</text>
+            </g>
+            <g transform="translate(230, 220)">
+              <circle cx="25" cy="25" r="22" fill="#F0ECE1" stroke="#E5DEC9" strokeWidth="1.5" style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.03))' }}/>
+              <text x="25" y="28" fill="#A89E84" fontSize="8" fontWeight="bold" textAnchor="middle" letterSpacing="1">AUD</text>
+            </g>
+            <g transform="translate(70, 20)">
+              <rect width="50" height="35" rx="4" fill="#F0ECE1" stroke="#E5DEC9" strokeWidth="1.5" style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.03))' }}/>
+              <text x="25" y="22" fill="#A89E84" fontSize="8" fontWeight="bold" textAnchor="middle" letterSpacing="1">HQ</text>
+            </g>
+            
+            <rect x="5%" y="5%" width="90%" height="90%" rx="16" fill="none" stroke="#FD6825" strokeWidth="1.5" strokeDasharray="6 4" opacity="0.2"/>
+          </svg>
+
+          {/* Pulsing Campus Center Dot */}
+          <div className="absolute" style={{ top: '44%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 20 }}>
+            <div className="relative flex items-center justify-center">
+              <div className="absolute w-12 h-12 bg-[#FD6825]/15 rounded-full animate-ping"/>
+              <div className="absolute w-7  h-7  bg-[#FD6825]/10 rounded-full"/>
+              <div className="relative w-4  h-4  bg-[#FD6825] rounded-full border-2 border-white shadow-lg"/>
+            </div>
           </div>
-        </div>
 
-        {/* Pins */}
-        {places.length > 0
-          ? places.slice(0,5).map((place, i) => {
+          {/* Dynamic Place pins */}
+          {places.length > 0 &&
+            places.slice(0, 15).map((place, i) => {
               const chip = getChip(place.category);
-              const pos  = PIN_POS[i] || { top:'30%', left:'30%' };
+              const pos = getMarkerPosition(place, centerCoords);
+              const isSelected = selectedPlace?.id === place.id;
               return (
-                <motion.div key={place.id||i} className="absolute" style={{ top:pos.top, left:pos.left, zIndex:10 }}
-                  initial={{ scale:0, opacity:0 }} animate={{ scale:1, opacity:1 }}
-                  transition={{ type:'spring', stiffness:280, damping:22, delay:i*0.08 }}>
-                  <div className="relative">
-                    <div className="p-2.5 rounded-xl shadow-lg ring-2 ring-white" style={{ background:chip.pinColor }}>
+                <motion.div 
+                  key={place.id || i} 
+                  className="absolute" 
+                  style={{ top: pos.top, left: pos.left, zIndex: 10 }}
+                  initial={{ scale: 0, opacity: 0 }} 
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 280, damping: 22, delay: i * 0.08 }}
+                >
+                  <div 
+                    className="relative group/pin cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectPlace(place);
+                    }}
+                  >
+                    <div 
+                      className={cn(
+                        "p-2.5 rounded-xl shadow-lg ring-2 ring-white hover:scale-110 transition-transform",
+                        isSelected && "ring-[#FD6825] ring-offset-2 scale-110 shadow-xl"
+                      )} 
+                      style={{ background: chip.pinColor }}
+                    >
                       <chip.Icon size={16} color="white"/>
                     </div>
                     <div className="absolute -bottom-[9px] left-1/2 -translate-x-1/2 w-0 h-0"
-                       style={{ borderLeft:'6px solid transparent', borderRight:'6px solid transparent', borderTop:`9px solid ${chip.pinColor}` }}/>
+                       style={{ borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: `9px solid ${chip.pinColor}` }}/>
+                    
+                    {/* Tooltip on Hover */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/pin:block z-50">
+                      <div className="bg-gray-900/95 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1.5 rounded-xl whitespace-nowrap shadow-xl border border-white/10">
+                        {place.name}
+                      </div>
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900/95"/>
+                    </div>
                   </div>
                 </motion.div>
               );
             })
-          : [
-              { pos:PIN_POS[0], color:'#7C3AED', Icon:Printer },
-              { pos:PIN_POS[1], color:'#7C3AED', Icon:Printer },
-              { pos:PIN_POS[2], color:'#F97316', Icon:Utensils },
-              { pos:PIN_POS[3], color:'#F97316', Icon:Utensils },
-              { pos:PIN_POS[4], color:'#22C55E', Icon:Coffee },
-              { pos:PIN_POS[5], color:'#3B82F6', Icon:Book },
-            ].map(({ pos, color, Icon }, i) => (
-              <div key={i} className="absolute" style={{ top:pos.top, left:pos.left, zIndex:10 }}>
-                <div className="relative">
-                  <div className="p-2.5 rounded-xl shadow-lg ring-2 ring-white" style={{ background:color }}>
-                    <Icon size={16} color="white"/>
-                  </div>
-                  <div className="absolute -bottom-[9px] left-1/2 -translate-x-1/2 w-0 h-0"
-                    style={{ borderLeft:'6px solid transparent', borderRight:'6px solid transparent', borderTop:`9px solid ${color}` }}/>
-                </div>
-              </div>
-            ))
-        }
-
-        {/* User / campus location pulsing dot */}
-        {hasLocation && (
-          <div className="absolute" style={{ top:'44%', left:'48%', transform:'translate(-50%,-50%)', zIndex:20 }}>
-            <div className="relative flex items-center justify-center">
-              <div className="absolute w-14 h-14 bg-[#3B82F6]/20 rounded-full animate-ping"/>
-              <div className="absolute w-8  h-8  bg-[#3B82F6]/10 rounded-full"/>
-              <div className="relative w-5  h-5  bg-[#3B82F6] rounded-full border-[3px] border-white shadow-xl"/>
-            </div>
-          </div>
-        )}
+          }
+        </div>
       </div>
 
-      {/* Bottom-left actions */}
-      <div className="absolute bottom-5 left-5 flex flex-col gap-2" style={{ zIndex:30 }}>
-        <button onClick={onLocate} disabled={locating}
-          className={cn('glass px-4 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 transition-all shadow-medium border',
-            hasLocation ? 'bg-white/90 border-[#3B82F6]/40 text-[#3B82F6]'
-                        : 'bg-white/80 border-white/30 text-gray-700 hover:bg-white')}>
-          {locating ? <Loader2 size={14} className="animate-spin"/> : <Navigation size={14} className={hasLocation ? 'fill-[#3B82F6] text-[#3B82F6]' : ''}/>}
-          {locating ? t('loading') : hasLocation ? t('active_location') : t('my_location')}
-        </button>
-        <button onClick={onCampusDemo}
-          className="glass px-4 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 bg-white/80 border border-white/30 text-gray-600 hover:bg-white hover:text-[#FD6825] transition-all shadow-soft">
-          <Target size={13}/>
-          {t('use_campus_point')}
-        </button>
+      {/* FIXED OVERLAY ELEMENTS (Do not scale with zoom) */}
+
+      {/* Campus label */}
+      <div className="absolute top-4 left-4" style={{ zIndex: 30 }}>
+        <div className="bg-white/95 backdrop-blur-sm px-4 py-2 rounded-2xl text-xs font-black text-gray-800 shadow-medium border border-gray-100 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#FD6825] animate-pulse"/>
+          {selectedUni || 'Pilih Kampus'}
+        </div>
       </div>
 
-      {/* Tanya AI */}
-      <div className="absolute bottom-5 right-5" style={{ zIndex:30 }}>
-        <button className="bg-[#FD6825] hover:bg-[#E85A1D] px-5 py-2.5 rounded-full text-xs font-bold text-white flex items-center gap-2 shadow-lg shadow-[#FD6825]/35 transition-all hover:scale-105 active:scale-95">
-          <Bot size={14}/>
-          {t('tanya_ai')}
-        </button>
+      {/* Info Box (bottom left) */}
+      <div className="absolute bottom-4 left-5 bg-white/95 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-gray-100 shadow-medium max-w-[280px]" style={{ zIndex: 30 }}>
+        <div className="text-[10px] font-extrabold text-[#FD6825] uppercase tracking-wider mb-0.5">Area Kampus</div>
+        <div className="text-[10px] font-medium text-gray-500 leading-normal">
+          Rekomendasi dihitung dari titik pusat kampus yang dipilih.
+        </div>
       </div>
 
       {/* Map controls */}
-      <div className="absolute top-4 right-4 flex flex-col gap-1.5" style={{ zIndex:30 }}>
-        <button className="glass w-9 h-9 rounded-xl flex items-center justify-center text-gray-600 hover:bg-white transition-all shadow-soft border border-white/40"><Navigation size={14}/></button>
-        <button className="glass w-9 h-9 rounded-xl flex items-center justify-center text-gray-600 font-bold text-xl hover:bg-white transition-all shadow-soft border border-white/40">+</button>
-        <button className="glass w-9 h-9 rounded-xl flex items-center justify-center text-gray-600 font-bold text-xl hover:bg-white transition-all shadow-soft border border-white/40">−</button>
+      <div className="absolute top-4 right-4 flex flex-col gap-2" style={{ zIndex: 30 }}>
+        <button 
+          onClick={() => setZoom(z => Math.min(2.5, z + 0.2))}
+          className="w-10 h-10 rounded-full bg-white text-gray-700 hover:text-[#FD6825] flex items-center justify-center shadow-medium hover:shadow-lg active:scale-95 transition-all border border-gray-100/50"
+          title="Zoom In"
+        >
+          <Plus size={18} strokeWidth={2.5}/>
+        </button>
+        <button 
+          onClick={() => setZoom(z => Math.max(0.5, z - 0.2))}
+          className="w-10 h-10 rounded-full bg-white text-gray-700 hover:text-[#FD6825] flex items-center justify-center shadow-medium hover:shadow-lg active:scale-95 transition-all border border-gray-100/50"
+          title="Zoom Out"
+        >
+          <Minus size={18} strokeWidth={2.5}/>
+        </button>
+        <button 
+          onClick={() => {
+            setZoom(1.0);
+            setPanOffset({ x: 0, y: 0 });
+          }}
+          className="w-10 h-10 rounded-full bg-white text-gray-700 hover:text-[#FD6825] flex items-center justify-center shadow-medium hover:shadow-lg active:scale-95 transition-all border border-gray-100/50"
+          title="Pusatkan Peta"
+        >
+          <Crosshair size={18} strokeWidth={2.5}/>
+        </button>
       </div>
     </div>
   );
@@ -207,7 +323,7 @@ function PlaceCard({ place, isSelected, isFavorited, onToggleFavorite, onClick }
             <span className="text-gray-300">•</span>
           )}
           {place.distanceText && place.distanceText !== '-' && (
-            <span>{formatDistance(place.distanceText)}</span>
+            <span>{formatDistance(place.distanceMeters)}</span>
           )}
         </div>
       </div>
@@ -235,10 +351,20 @@ function PlaceDetail({ place, isFavorited, onToggleFavorite }) {
           <chip.Icon size={44}/>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/25 to-transparent"/>
-        <div className="absolute bottom-4 left-5">
+        <div className="absolute bottom-4 left-5 flex flex-wrap gap-2 items-center">
           <span className="text-[10px] font-bold px-2.5 py-1 rounded-full text-white" style={{ background:chip.pinColor }}>
             {place.category || chip.label}
           </span>
+          {place.popularityCategory && (
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-orange-500 text-white shadow-sm flex items-center gap-0.5">
+              🔥 {place.popularityCategory}
+            </span>
+          )}
+          {place.distanceCategory && (
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-blue-500 text-white shadow-sm">
+              📍 {place.distanceCategory}
+            </span>
+          )}
         </div>
       </div>
       {/* Body */}
@@ -266,13 +392,50 @@ function PlaceDetail({ place, isFavorited, onToggleFavorite }) {
           {place.distanceText && place.distanceText !== '-' && (
             <span className="flex items-center gap-1">
               <MapPin size={12} className="text-[#FD6825]"/>
-              {formatDistance(place.distanceText)} {t('from_your_location')}
+              {formatDistance(place.distanceMeters)} dari pusat kampus
             </span>
           )}
         </div>
 
+        {/* Google Category and Tags */}
+        {(place.googleCategory || place.tags) && (
+          <div className="space-y-2 border-t border-gray-50 pt-3">
+            {place.googleCategory && (
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                Kategori Google: <span className="text-gray-700 capitalize font-medium">{place.googleCategory}</span>
+              </p>
+            )}
+            {place.tags && (
+              <div className="flex flex-wrap gap-1.5">
+                {(typeof place.tags === 'string' ? place.tags.split(',') : place.tags).map((tag, idx) => {
+                  const cleaned = tag.trim();
+                  if (!cleaned) return null;
+                  return (
+                    <span key={idx} className="text-[10px] font-bold text-[#FD6825] bg-[#FFF8EC] border border-[#FDC439]/20 px-2 py-0.5 rounded-lg">
+                      #{cleaned}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* AI Trust Score */}
+        {place.trustScore != null && (
+          <div className="bg-green-50/50 border border-green-100/50 px-4 py-3 rounded-2xl space-y-1.5 shadow-soft">
+            <div className="flex justify-between text-xs font-bold text-green-700">
+              <span className="flex items-center gap-1">🛡️ Skor Kepercayaan AI</span>
+              <span>{place.trustScore > 1 ? place.trustScore : Math.round(place.trustScore * 100)}%</span>
+            </div>
+            <div className="w-full bg-green-200/40 h-2 rounded-full overflow-hidden">
+              <div className="bg-green-500 h-full rounded-full transition-all duration-500" style={{ width: `${place.trustScore > 1 ? place.trustScore : place.trustScore * 100}%` }}/>
+            </div>
+          </div>
+        )}
+
         {place.description && (
-          <p className="text-sm text-gray-600 leading-relaxed">{place.description}</p>
+          <p className="text-sm text-gray-600 leading-relaxed pt-1">{place.description}</p>
         )}
 
         {place.address && (
@@ -360,11 +523,11 @@ export default function PlacesPage() {
   const [activeLainnya, setActiveLainnya] = useState(null); // raw category chosen from Lainnya
   const lainnyaRef                        = useRef(null);
 
-  // Campus + location
+  // Campus + Map States
   const [selectedUni, setSelectedUni]     = useState('');
-  const [userLocation, setUserLocation]   = useState(null);
-  const [usingCampus, setUsingCampus]     = useState(false);
-  const [locating, setLocating]           = useState(false);
+  const [zoom, setZoom]                   = useState(1.0);
+  const [panOffset, setPanOffset]         = useState({ x: 0, y: 0 });
+  const prevUniRef                        = useRef('');
 
   // Results
   const [places, setPlaces]               = useState([]);
@@ -381,7 +544,10 @@ export default function PlacesPage() {
   useEffect(() => {
     placesService.getPlacesConfig().then(cfg => {
       setAppConfig(cfg);
-      if (cfg.campuses?.length) setSelectedUni(cfg.campuses[0].name);
+      if (cfg.campuses?.length) {
+        setSelectedUni(cfg.campuses[0].name);
+        prevUniRef.current = cfg.campuses[0].name;
+      }
     }).finally(() => setConfigLoading(false));
 
     // Load favorites
@@ -389,6 +555,26 @@ export default function PlacesPage() {
       setFavorites(favs);
     }).catch(e => console.warn('Failed to load favorites:', e.message));
   }, []);
+
+  // Trigger search on selectedUni / activeChip / activeLainnya changes
+  useEffect(() => {
+    if (!selectedUni || configLoading) return;
+
+    const centers = appConfig.campusCenters || FALLBACK_CONFIG.campusCenters;
+    const campusCenter = centers[selectedUni];
+    if (!campusCenter) return;
+
+    // Reset zoom and pan when campus changes
+    if (prevUniRef.current !== selectedUni) {
+      setZoom(1.0);
+      setPanOffset({ x: 0, y: 0 });
+      prevUniRef.current = selectedUni;
+    }
+
+    const apiCat = activeLainnya || resolveApiCat(activeChip, appConfig);
+
+    runSearch(campusCenter, apiCat);
+  }, [selectedUni, activeChip, activeLainnya, configLoading]);
 
   // Close Lainnya dropdown on outside click
   useEffect(() => {
@@ -402,12 +588,6 @@ export default function PlacesPage() {
   const campusList     = appConfig.campuses       || FALLBACK_CONFIG.campuses;
   const lainnyaCats    = appConfig.lainnyaCategories || FALLBACK_CONFIG.lainnyaCategories;
 
-  // Resolve the active API category value
-  const getApiCat = (chipId, rawCat) => {
-    if (rawCat) return rawCat; // Lainnya raw category → send directly
-    return resolveApiCat(chipId, appConfig);
-  };
-
   // Client-side filter on displayed places
   const filteredPlaces = filterQuery.trim()
     ? places.filter(p => {
@@ -420,32 +600,6 @@ export default function PlacesPage() {
         );
       })
     : places;
-
-  // ── Geolocation ──
-  const handleLocate = () => {
-    if (!navigator.geolocation) { setError('Browser tidak mendukung geolokasi.'); return; }
-    setLocating(true); setError(''); setUsingCampus(false);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const loc = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-        setUserLocation(loc); setLocating(false);
-        await runSearch(loc, getApiCat(activeChip, activeLainnya));
-      },
-      () => { setLocating(false); setError('Akses lokasi ditolak. Gunakan "Gunakan titik kampus" untuk demo.'); },
-      { timeout: 10000 }
-    );
-  };
-
-  // ── Demo: campus centre ──
-  const handleCampusDemo = async () => {
-    const centers = appConfig.campusCenters || FALLBACK_CONFIG.campusCenters;
-    const c = centers?.[selectedUni];
-    if (!c) { setError('Koordinat kampus tidak tersedia.'); return; }
-    setError(''); setUsingCampus(true);
-    const loc = { lat: c.lat, lon: c.lon };
-    setUserLocation(loc);
-    await runSearch(loc, getApiCat(activeChip, activeLainnya));
-  };
 
   const isPlaceFavorited = (place) => {
     if (!place) return false;
@@ -478,23 +632,17 @@ export default function PlacesPage() {
   };
 
   // ── Chip click ──
-  const handleChipClick = async (chipId) => {
-    setActiveChip(chipId); setActiveLainnya(null); setLainnyaOpen(false);
-    if (!userLocation) return;
-    if (chipId === 'all') {
-      // Semua: re-use existing results if any, otherwise default to fotokopi
-      if (places.length > 0) return; // already have results, just remove category filter
-      await runSearch(userLocation, 'Fotokopi');
-      return;
-    }
-    await runSearch(userLocation, resolveApiCat(chipId, appConfig));
+  const handleChipClick = (chipId) => {
+    setActiveChip(chipId);
+    setActiveLainnya(null);
+    setLainnyaOpen(false);
   };
 
   // ── Lainnya sub-category select ──
-  const handleLainnyaSelect = async (rawCat) => {
-    setActiveLainnya(rawCat); setActiveChip('lainnya'); setLainnyaOpen(false);
-    if (!userLocation) return;
-    await runSearch(userLocation, rawCat);
+  const handleLainnyaSelect = (rawCat) => {
+    setActiveLainnya(rawCat);
+    setActiveChip('lainnya');
+    setLainnyaOpen(false);
   };
 
   // ── Core search ──
@@ -526,6 +674,8 @@ export default function PlacesPage() {
   // Active chip label (for Lainnya sub-selections)
   const activeChipLabel = activeLainnya || CHIP_DEFS.find(c => c.id === activeChip)?.label || 'Semua';
 
+  const currentCampusCenter = appConfig.campusCenters?.[selectedUni] || FALLBACK_CONFIG.campusCenters?.[selectedUni];
+
   return (
     <div className="space-y-5 max-w-[1400px] mx-auto pb-10 animate-in fade-in duration-500">
 
@@ -548,7 +698,7 @@ export default function PlacesPage() {
       {/* ── Category chips ── */}
       <div className="flex items-center gap-2.5">
 
-        {/* Scrollable built-in chips — overflow is safe here */}
+        {/* Scrollable built-in chips ── */}
         <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-hide pb-1 flex-1 min-w-0">
           {CHIP_DEFS.map(chip => {
             const isActive = activeChip === chip.id && !activeLainnya;
@@ -573,7 +723,7 @@ export default function PlacesPage() {
           })}
         </div>
 
-        {/* Lainnya — OUTSIDE overflow-x-auto so the dropdown is never clipped */}
+        {/* Lainnya dropdown */}
         <div className="relative shrink-0" ref={lainnyaRef}>
           <button
             onClick={() => setLainnyaOpen(o => !o)}
@@ -602,7 +752,6 @@ export default function PlacesPage() {
             )}
           </button>
 
-          {/* Dropdown — renders below and to the right, z-index above everything */}
           <AnimatePresence>
             {lainnyaOpen && (
               <motion.div
@@ -636,31 +785,46 @@ export default function PlacesPage() {
 
       </div>
 
-
       {/* ── Map ── */}
       <MapPlaceholder
         places={places}
-        hasLocation={!!userLocation}
-        onLocate={handleLocate}
-        locating={locating}
-        onCampusDemo={handleCampusDemo}
         selectedUni={selectedUni}
+        zoom={zoom}
+        setZoom={setZoom}
+        centerCoords={currentCampusCenter}
+        panOffset={panOffset}
+        setPanOffset={setPanOffset}
+        onSelectPlace={setSelectedPlace}
+        selectedPlace={selectedPlace}
       />
 
-      {/* Demo mode banner */}
-      {usingCampus && userLocation && (
-        <div className="flex items-center gap-2 text-xs font-bold text-[#3B82F6] bg-blue-50 px-4 py-2.5 rounded-xl border border-blue-100">
-          <Target size={13}/>
-          {t('active_location')} <strong className="ml-1">{selectedUni}</strong>
-          <span className="font-normal ml-1">({t('demo_mode')})</span>
-        </div>
-      )}
-
       {/* Error */}
-      {error && error !== 'PLACE_RECOMMENDER_NOT_CONFIGURED' && (
-        <div className="flex items-center gap-2 text-sm text-red-500 bg-red-50 px-4 py-3 rounded-xl border border-red-100">
-          <AlertCircle size={15}/> {error}
-        </div>
+      {!loading && error && error !== 'PLACE_RECOMMENDER_NOT_CONFIGURED' && (
+        <motion.div 
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center justify-center py-14 px-6 text-center bg-white rounded-[28px] border border-red-100 shadow-medium max-w-2xl mx-auto space-y-5"
+        >
+          <div className="w-16 h-16 rounded-[22px] bg-red-50 border border-red-100 flex items-center justify-center text-red-500 shadow-sm">
+            <AlertCircle size={32} />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-xl font-black text-gray-900 tracking-tight">
+              Layanan rekomendasi sedang bermasalah. Coba lagi nanti.
+            </h3>
+            {error && <p className="text-xs text-gray-400 font-mono mt-1">Detail: {error}</p>}
+          </div>
+          <button
+            onClick={() => {
+              if (currentCampusCenter) {
+                runSearch(currentCampusCenter, activeLainnya || resolveApiCat(activeChip, appConfig));
+              }
+            }}
+            className="bg-[#FD6825] hover:bg-[#E85A1D] px-7 py-3 rounded-full text-xs font-bold text-white shadow-lg shadow-[#FD6825]/25 hover:scale-105 active:scale-95 transition-all"
+          >
+            Coba Lagi
+          </button>
+        </motion.div>
       )}
 
       {/* Recommender Service Not Configured State */}
@@ -683,10 +847,8 @@ export default function PlacesPage() {
           </div>
           <button
             onClick={() => {
-              if (userLocation) {
-                runSearch(userLocation, getApiCat(activeChip, activeLainnya));
-              } else {
-                handleCampusDemo();
+              if (currentCampusCenter) {
+                runSearch(currentCampusCenter, activeLainnya || resolveApiCat(activeChip, appConfig));
               }
             }}
             className="bg-[#FD6825] hover:bg-[#E85A1D] px-7 py-3 rounded-full text-xs font-bold text-white shadow-lg shadow-[#FD6825]/25 hover:scale-105 active:scale-95 transition-all"
@@ -704,25 +866,22 @@ export default function PlacesPage() {
         </div>
       )}
 
-      {/* Pre-search empty */}
-      {!loading && !hasSearched && (
-        <div className="flex flex-col items-center justify-center py-10 text-gray-400 space-y-3">
-          <div className="w-16 h-16 rounded-3xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center">
-            <Navigation size={26} className="text-gray-300"/>
-          </div>
-          <p className="text-sm font-medium text-center max-w-xs text-gray-400">
-            {t('click') || 'Klik'} <span className="font-bold text-[#3B82F6]">{t('my_location')}</span> {t('or') || 'atau'}{' '}
-            <span className="font-bold text-[#FD6825]">{t('use_campus_point')}</span> {t('to_start') || 'pada peta untuk memulai.'}
-          </p>
-        </div>
-      )}
-
       {/* No results from API */}
       {!loading && hasSearched && places.length === 0 && !error && (
-        <div className="flex flex-col items-center justify-center py-10 text-gray-400 gap-3">
-          <MapPin size={32} className="text-gray-300"/>
-          <p className="text-sm font-bold">{t('no_recommendations')}</p>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center justify-center py-14 px-6 text-center bg-white rounded-[28px] border border-gray-100 shadow-medium max-w-2xl mx-auto space-y-4"
+        >
+          <div className="w-16 h-16 rounded-[22px] bg-[#FFF8EC] border border-[#FDC439]/30 flex items-center justify-center text-[#FD6825] shadow-sm">
+            <MapPin size={32} />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-lg font-black text-gray-900 tracking-tight">
+              Tidak ada rekomendasi untuk kategori ini. Coba kategori lain.
+            </h3>
+          </div>
+        </motion.div>
       )}
 
       {/* Results */}
@@ -736,7 +895,9 @@ export default function PlacesPage() {
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">{t('places_near_you')}</h2>
                 <p className="text-sm text-gray-400 font-medium mt-0.5">
-                  {t('showing_places', { count: places.length })} · {selectedUni}
+                  {activeChip === 'all'
+                    ? `Menampilkan ${filteredPlaces.length} rekomendasi terdekat dari beberapa kategori`
+                    : `Menampilkan ${filteredPlaces.length} rekomendasi terdekat · ${activeChipLabel}`}
                 </p>
               </div>
               <button className="text-xs font-bold flex items-center gap-1.5 text-gray-700 bg-white px-4 py-2.5 rounded-xl border border-gray-200 shadow-soft whitespace-nowrap shrink-0 mt-1">
@@ -744,7 +905,7 @@ export default function PlacesPage() {
               </button>
             </div>
 
-            {/* Text filter — appears only when there are results */}
+            {/* Text filter ── */}
             <div className="relative">
               <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
               <input
