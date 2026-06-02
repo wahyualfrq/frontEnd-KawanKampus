@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import { registerUser } from '../services/auth.service';
+import BrandLogo from '../components/common/BrandLogo';
 
 /* ── Benefits shown in left panel ── */
 const BENEFITS = [
@@ -112,10 +113,7 @@ export default function RegisterPage() {
 
           {/* Logo */}
           <div className="flex flex-col items-center text-center gap-5">
-            <div className="rounded-3xl bg-gradient-to-br from-[#FD6825] to-[#FDC439] flex items-center justify-center shadow-2xl shadow-[#FD6825]/40"
-              style={{ width: 72, height: 72 }}>
-              <MapPin size={34} color="white" strokeWidth={2.5}/>
-            </div>
+            <BrandLogo variant="mark" size="lg" dark={true} />
             <div>
               <h1 className="text-3xl font-black text-white mb-2">
                 Kawan<span className="text-[#FDC439]">Kampus</span>
@@ -152,12 +150,7 @@ export default function RegisterPage() {
 
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2.5 mb-8">
-            <div className="w-9 h-9 rounded-xl bg-[#FD6825] flex items-center justify-center shadow-sm">
-              <MapPin size={17} color="white"/>
-            </div>
-            <span className="text-xl font-black text-gray-900">
-              Kawan<span className="text-[#FD6825]">Kampus</span>
-            </span>
+            <BrandLogo variant="full" size="sm" dark={false} />
           </div>
 
           {/* Card */}

@@ -5,6 +5,7 @@ import {
   Menu, X, Star, Zap, BookOpen, Coffee, Copy,
   ShoppingBag, ChevronRight, TrendingUp, Clock,
 } from 'lucide-react';
+import BrandLogo from '../components/common/BrandLogo';
 
 /* ─────────────────────────────────────────────
    MINI PREVIEWS (CSS-only mockups, no images)
@@ -316,13 +317,8 @@ export default function LandingPage() {
       }`}>
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
-          <button onClick={() => scrollTo('hero')} className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#FD6825] flex items-center justify-center shadow-sm shadow-[#FD6825]/30">
-              <MapPin size={15} color="white"/>
-            </div>
-            <span className="text-lg font-black text-gray-900">
-              Kawan<span className="text-[#FD6825]">Kampus</span>
-            </span>
+          <button onClick={() => scrollTo('hero')} className="flex items-center">
+            <BrandLogo variant="full" size="sm" dark={false} />
           </button>
 
           {/* Desktop nav links */}
@@ -750,14 +746,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             {/* Logo */}
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-xl bg-[#FD6825] flex items-center justify-center shadow-sm">
-                <MapPin size={13} color="white"/>
-              </div>
-              <span className="font-black text-white">
-                Kawan<span className="text-[#FD6825]">Kampus</span>
-              </span>
-            </div>
+            <BrandLogo variant="full" size="xs" dark={true} />
 
             {/* Links */}
             <div className="flex items-center gap-6">
