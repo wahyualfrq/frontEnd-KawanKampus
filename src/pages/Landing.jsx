@@ -128,37 +128,42 @@ function MiniChatPreview() {
    FEATURE CARDS (large, with visual previews)
 ───────────────────────────────────────────── */
 
-function FeatureCard({ icon: Icon, color, bgColor, badge, title, desc, preview }) {
+function FeatureCard({ icon: Icon, color, bgColor, gradientFrom, gradientTo, badge, title, desc, preview }) {
   return (
-    <div className="group bg-white rounded-[28px] p-7 shadow-sm border border-gray-100
-      hover:shadow-xl hover:shadow-gray-200/60 hover:-translate-y-2 transition-all duration-300
-      flex flex-col gap-5">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="w-13 h-13 rounded-2xl flex items-center justify-center shrink-0"
-          style={{ background: bgColor }}>
-          <Icon size={24} style={{ color }}/>
+    <div className="group relative bg-white rounded-[28px] overflow-hidden
+      shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300
+      flex flex-col">
+      {/* Gradient top accent bar */}
+      <div className="h-1.5 w-full" style={{ background: `linear-gradient(90deg, ${gradientFrom}, ${gradientTo})` }}/>
+      <div className="p-7 flex flex-col gap-5 flex-1">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div className="w-13 h-13 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
+            style={{ background: `linear-gradient(135deg, ${gradientFrom}22, ${gradientTo}33)`, border: `1.5px solid ${gradientFrom}30` }}>
+            <Icon size={24} style={{ color }}/>
+          </div>
+          {badge && (
+            <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full"
+              style={{ background: `linear-gradient(135deg, ${gradientFrom}18, ${gradientTo}25)`, color, border: `1px solid ${color}20` }}>
+              {badge}
+            </span>
+          )}
         </div>
-        {badge && (
-          <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full"
-            style={{ background: bgColor, color }}>
-            {badge}
-          </span>
-        )}
-      </div>
-      {/* Preview */}
-      <div className="h-40 rounded-2xl overflow-hidden ring-1 ring-gray-100 shadow-inner">
-        {preview}
-      </div>
-      {/* Text */}
-      <div>
-        <h3 className="text-lg font-black text-gray-900 mb-1.5">{title}</h3>
-        <p className="text-sm text-gray-500 font-medium leading-relaxed">{desc}</p>
-      </div>
-      {/* CTA hint */}
-      <div className="flex items-center gap-1 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity"
-        style={{ color }}>
-        Lihat selengkapnya <ChevronRight size={13}/>
+        {/* Preview */}
+        <div className="h-40 rounded-2xl overflow-hidden shadow-inner"
+          style={{ background: `linear-gradient(160deg, ${gradientFrom}08, ${gradientTo}10)`, border: `1px solid ${gradientFrom}18` }}>
+          {preview}
+        </div>
+        {/* Text */}
+        <div>
+          <h3 className="text-lg font-black text-gray-900 mb-1.5">{title}</h3>
+          <p className="text-sm text-gray-500 font-medium leading-relaxed">{desc}</p>
+        </div>
+        {/* CTA hint */}
+        <div className="flex items-center gap-1 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity mt-auto"
+          style={{ color }}>
+          Lihat selengkapnya <ChevronRight size={13}/>
+        </div>
       </div>
     </div>
   );
@@ -201,7 +206,7 @@ function AppPreviewSection() {
   ];
 
   return (
-    <section className="py-28 bg-[#F8FAFC]">
+    <section className="py-28 relative z-10">
       <div className="max-w-6xl mx-auto px-5 sm:px-8">
         {/* Header */}
         <div className="text-center mb-14 space-y-3">
@@ -340,7 +345,8 @@ export default function LandingPage() {
               Masuk
             </Link>
             <Link to="/register"
-              className="px-5 py-2.5 text-sm font-bold text-white bg-[#FD6825] hover:bg-[#E85A1D] rounded-xl shadow-sm shadow-[#FD6825]/30 transition-all hover:scale-105 active:scale-95">
+              className="px-5 py-2.5 text-sm font-bold text-white rounded-xl shadow-sm shadow-[#FD6825]/30 transition-all hover:scale-105 active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #FD6825 0%, #FFC928 100%)' }}>
               Daftar Gratis
             </Link>
           </div>
@@ -372,7 +378,8 @@ export default function LandingPage() {
                 Masuk
               </Link>
               <Link to="/register" onClick={() => setMenuOpen(false)}
-                className="flex-1 text-center py-3 text-sm font-bold text-white bg-[#FD6825] rounded-xl shadow-sm transition-all">
+                className="flex-1 text-center py-3 text-sm font-bold text-white rounded-xl shadow-sm transition-all"
+                style={{ background: 'linear-gradient(135deg, #FD6825 0%, #FFC928 100%)' }}>
                 Daftar
               </Link>
             </div>
@@ -523,7 +530,13 @@ export default function LandingPage() {
       </section>
 
       {/* ── FEATURES ────────────────────────────────────────────── */}
-      <section id="features" className="py-28 bg-white">
+      <section id="features" className="py-28 relative overflow-hidden"
+        style={{ background: 'linear-gradient(160deg, #ffffff 0%, #fff8f4 40%, #fef3e8 70%, #ffffff 100%)' }}>
+        {/* Subtle radial glow */}
+        <div className="absolute top-0 right-0 w-[50%] h-[60%] rounded-full blur-[140px] pointer-events-none"
+          style={{ background: 'radial-gradient(circle, #FD682514 0%, transparent 70%)' }}/>
+        <div className="absolute bottom-0 left-0 w-[35%] h-[40%] rounded-full blur-[120px] pointer-events-none"
+          style={{ background: 'radial-gradient(circle, #FDC43914 0%, transparent 70%)' }}/>
         <div className="max-w-6xl mx-auto px-5 sm:px-8">
           <div className="text-center mb-16 space-y-4">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#FFF1E9] rounded-full border border-[#FD6825]/20">
@@ -544,6 +557,8 @@ export default function LandingPage() {
               icon={MapPin}
               color="#FD6825"
               bgColor="#FFF1E9"
+              gradientFrom="#FD6825"
+              gradientTo="#FFC928"
               badge="Populer"
               title="Peta Kampus"
               desc="Temukan fotokopi, makanan, minuman, ATK, dan kebutuhan lain di sekitar kampus dengan rekomendasi cerdas berbasis lokasimu."
@@ -553,6 +568,8 @@ export default function LandingPage() {
               icon={CheckSquare}
               color="#7C3AED"
               bgColor="#EDE9FE"
+              gradientFrom="#7C3AED"
+              gradientTo="#3B82F6"
               badge="Kanban"
               title="Kanban Tugas"
               desc="Kelola tugas kuliah dengan sistem Kanban visual: To Do, In Progress, dan Done. Pantau progres dan deadline setiap saat."
@@ -562,6 +579,8 @@ export default function LandingPage() {
               icon={MessageSquare}
               color="#3B82F6"
               bgColor="#EFF6FF"
+              gradientFrom="#3B82F6"
+              gradientTo="#06B6D4"
               badge="AI-Powered"
               title="Chatbot AI"
               desc="Dapatkan bantuan cepat untuk ide, rangkuman materi, penjelasan konsep, dan kebutuhan belajar lainnya dari asisten AI pintar."
@@ -572,7 +591,11 @@ export default function LandingPage() {
       </section>
 
       {/* ── HOW IT WORKS ────────────────────────────────────────── */}
-      <section id="how" className="py-28 bg-[#F8FAFC]">
+      <section id="how" className="py-28 relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #F8FAFC 0%, #EDE9FE20 30%, #F8FAFC 60%, #FFF1E910 100%)' }}>
+        {/* Mesh dots */}
+        <div className="absolute inset-0 opacity-[0.035]"
+          style={{ backgroundImage: 'radial-gradient(circle, #7C3AED 1px, transparent 1px)', backgroundSize: '28px 28px' }}/>
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
           <div className="text-center mb-16 space-y-4">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#FFF1E9] rounded-full border border-[#FD6825]/20">
@@ -593,39 +616,44 @@ export default function LandingPage() {
               {
                 step: '01', title: 'Buat Akun',
                 desc: 'Daftar gratis dengan nama, email, dan password. Tidak perlu kartu kredit — langsung bisa masuk.',
-                color: '#FD6825', bg: '#FFF1E9',
+                gradFrom: '#FD6825', gradTo: '#FFC928',
                 icon: BookOpen,
               },
               {
                 step: '02', title: 'Jelajahi Kampus',
                 desc: 'Buka peta dan temukan tempat-tempat strategis di sekitar kampusmu — fotokopi, warung, ATK, dan lebih banyak lagi.',
-                color: '#7C3AED', bg: '#EDE9FE',
+                gradFrom: '#7C3AED', gradTo: '#3B82F6',
                 icon: MapPin,
               },
               {
                 step: '03', title: 'Kelola & Tanyakan',
                 desc: 'Atur semua tugas kuliah di Kanban dan gunakan Chatbot AI kapan saja kamu butuh bantuan belajar.',
-                color: '#22C55E', bg: '#DCFCE7',
+                gradFrom: '#22C55E', gradTo: '#06B6D4',
                 icon: Zap,
               },
             ].map((item) => {
               const StepIcon = item.icon;
               return (
               <div key={item.step}
-                className="bg-white rounded-[24px] p-7 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col gap-5">
+                className="relative bg-white rounded-[24px] overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col">
+                {/* Gradient top accent */}
+                <div className="h-1.5" style={{ background: `linear-gradient(90deg, ${item.gradFrom}, ${item.gradTo})` }}/>
+                <div className="p-7 flex flex-col gap-5">
                 {/* Step + icon */}
                 <div className="flex items-center justify-between">
                   <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-black text-white shadow-md"
-                    style={{ background: item.color }}>
+                    style={{ background: `linear-gradient(135deg, ${item.gradFrom}, ${item.gradTo})` }}>
                     {item.step}
                   </div>
-                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: item.bg }}>
-                    <StepIcon size={18} style={{ color: item.color }}/>
+                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center"
+                    style={{ background: `linear-gradient(135deg, ${item.gradFrom}18, ${item.gradTo}22)`, border: `1px solid ${item.gradFrom}25` }}>
+                    <StepIcon size={18} style={{ color: item.gradFrom }}/>
                   </div>
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-gray-900 mb-2">{item.title}</h3>
                   <p className="text-gray-500 font-medium text-sm leading-relaxed">{item.desc}</p>
+                </div>
                 </div>
               </div>
               );
@@ -635,8 +663,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── APP PREVIEW ─────────────────────────────────────────── */}
-      <div id="preview">
+      {/* ── APP PREVIEW ────────────────────────────────────────────── */}
+      <div id="preview" className="relative overflow-hidden"
+        style={{ background: 'linear-gradient(175deg, #ffffff 0%, #F0EBF8 35%, #E8F1FE 65%, #ffffff 100%)' }}>
+        {/* Glow blobs */}
+        <div className="absolute top-1/4 left-0 w-72 h-72 rounded-full blur-[120px] pointer-events-none"
+          style={{ background: 'radial-gradient(circle, #7C3AED12 0%, transparent 70%)' }}/>
+        <div className="absolute bottom-1/4 right-0 w-80 h-80 rounded-full blur-[130px] pointer-events-none"
+          style={{ background: 'radial-gradient(circle, #3B82F610 0%, transparent 70%)' }}/>
         <AppPreviewSection/>
       </div>
 
@@ -670,7 +704,8 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => navigate('/register')}
-              className="flex items-center justify-center gap-2 px-8 py-4 bg-[#FD6825] hover:bg-[#E85A1D] text-white font-bold rounded-2xl shadow-lg shadow-[#FD6825]/30 transition-all hover:scale-105 active:scale-95"
+              className="flex items-center justify-center gap-2 px-8 py-4 text-white font-bold rounded-2xl shadow-lg shadow-[#FD6825]/30 transition-all hover:scale-105 active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #FD6825 0%, #FFC928 100%)' }}
             >
               Daftar Gratis <ArrowRight size={16}/>
             </button>

@@ -72,7 +72,12 @@ export default function LoginPage() {
     <div className="min-h-screen w-full flex">
 
       {/* ── LEFT PANEL (branding) ── */}
-      <div className="hidden lg:flex lg:w-[46%] bg-[#18181B] relative overflow-hidden flex-col items-center justify-center p-14">
+      <div className="hidden lg:flex lg:w-[46%] relative overflow-hidden flex-col items-center justify-center p-14"
+        style={{ background: 'linear-gradient(160deg, #1a1a1f 0%, #1e1624 40%, #181826 70%, #18181B 100%)' }}>
+
+        {/* Gradient accent bar */}
+        <div className="absolute top-0 left-0 right-0 h-1"
+          style={{ background: 'linear-gradient(90deg, #FD6825, #FFC928, #FD6825)' }}/>
 
         {/* Dot grid */}
         <div className="absolute inset-0 opacity-[0.07]"
