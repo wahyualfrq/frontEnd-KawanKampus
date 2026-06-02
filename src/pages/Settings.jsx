@@ -221,11 +221,11 @@ export default function SettingsPage() {
 
   // Clear Activity logs
   const handleClearHistory = async () => {
-    if (!window.confirm(t('confirm') || 'Apakah Anda yakin ingin menghapus seluruh riwayat tempat dan obrolan AI?')) return;
+    if (!window.confirm(t('confirm_clear_history') || 'Yakin ingin menghapus seluruh riwayat aktivitas?')) return;
     try {
       setLoading(true);
       await settingsService.clearHistory();
-      handleToast(true, t('success') || 'Semua riwayat obrolan AI dan tempat berhasil dibersihkan.');
+      handleToast(true, t('clear_history_success') || 'Riwayat berhasil dibersihkan.');
     } catch (err) {
       handleToast(false, t('failed'));
     } finally {
@@ -706,8 +706,8 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-xl border border-gray-100">
                   <div>
-                    <h4 className="text-sm font-bold text-gray-800">{t('save_chatbot_history')}</h4>
-                    <p className="text-xs text-gray-400 mt-0.5">{t('save_chatbot_history_desc')}</p>
+                    <h4 className="text-sm font-bold text-gray-800">{t('save_chat_history')}</h4>
+                    <p className="text-xs text-gray-400 mt-0.5">{t('save_chat_history_desc')}</p>
                   </div>
                   <input
                     type="checkbox"
@@ -717,36 +717,10 @@ export default function SettingsPage() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-xl border border-gray-100">
-                  <div>
-                    <h4 className="text-sm font-bold text-gray-800">{t('location_access')}</h4>
-                    <p className="text-xs text-gray-400 mt-0.5">{t('location_access_desc')}</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={preferences.locationAccessEnabled}
-                    onChange={e => handlePreferenceUpdate('locationAccessEnabled', e.target.checked)}
-                    className="w-4 h-4 text-[#FD6825] focus:ring-[#FD6825] border-gray-300 rounded cursor-pointer"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-xl border border-gray-100">
-                  <div>
-                    <h4 className="text-sm font-bold text-gray-800">{t('anonymous_mode')}</h4>
-                    <p className="text-xs text-gray-400 mt-0.5">{t('anonymous_mode_desc')}</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={preferences.privacyMode}
-                    onChange={e => handlePreferenceUpdate('privacyMode', e.target.checked)}
-                    className="w-4 h-4 text-[#FD6825] focus:ring-[#FD6825] border-gray-300 rounded cursor-pointer"
-                  />
-                </div>
-
                 <div className="border-t border-gray-50 pt-5">
-                  <h4 className="text-sm font-bold text-gray-800 mb-2">{t('clear_history_title')}</h4>
+                  <h4 className="text-sm font-bold text-gray-800 mb-2">{t('clear_activity_history')}</h4>
                   <p className="text-xs text-gray-400 mb-4 leading-relaxed">
-                    {t('clear_history_desc')}
+                    {t('clear_activity_history_desc')}
                   </p>
                   <button
                     onClick={handleClearHistory}
