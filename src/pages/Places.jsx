@@ -970,7 +970,7 @@ export default function PlacesPage() {
               <input
                 value={filterQuery}
                 onChange={e => setFilterQuery(e.target.value)}
-                placeholder={t('filter_placeholder') || 'Filter: nama, kategori, atau deskripsi…'}
+                placeholder={t('search_places_placeholder') || 'Cari tempat dari hasil rekomendasi...'}
                 className="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-[#FD6825]/15 focus:border-[#FD6825] shadow-soft transition-all placeholder:text-gray-300"
               />
               {filterQuery && (

@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   MapPin, Star, Bookmark, Share2, Trash2, Navigation,
   ExternalLink, Loader2, Grid, Printer, Book, Utensils, Coffee, AlertCircle,
-  ChevronDown, X
+  ChevronDown, X, Search
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../utils/cn';
@@ -105,6 +105,7 @@ export default function FavoritesPage() {
   const [activeChip, setActiveChip] = useState('all');
   const [activeLainnya, setActiveLainnya] = useState(null);
   const [lainnyaOpen, setLainnyaOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const lainnyaRef = useRef(null);
 
   const fetchFavorites = async () => {
@@ -170,22 +171,34 @@ export default function FavoritesPage() {
 
   // Filter logic
   const filteredFavorites = favorites.filter(fav => {
-    if (activeChip === 'all') return true;
-
-    if (activeChip === 'lainnya') {
-      if (activeLainnya) {
-        // Filter strictly by the selected subcategory from the dropdown
-        const sub = getFavoriteSubcategory(fav).toLowerCase();
-        return sub === activeLainnya.toLowerCase();
+    // 1. Category filter
+    let matchesCategory = true;
+    if (activeChip !== 'all') {
+      if (activeChip === 'lainnya') {
+        if (activeLainnya) {
+          const sub = getFavoriteSubcategory(fav).toLowerCase();
+          matchesCategory = sub === activeLainnya.toLowerCase();
+        } else {
+          const groupId = getChip(fav).id;
+          matchesCategory = groupId === 'lainnya';
+        }
       } else {
-        // Return favorites in the general "Lainnya" category (not matching main categories)
         const groupId = getChip(fav).id;
-        return groupId === 'lainnya';
+        matchesCategory = groupId === activeChip;
       }
     }
 
-    const groupId = getChip(fav).id;
-    return groupId === activeChip;
+    // 2. Search query filter
+    let matchesSearch = true;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const nameMatch = fav.name?.toLowerCase().includes(q);
+      const catMatch = fav.category?.toLowerCase().includes(q) || fav.rawCategory?.toLowerCase().includes(q);
+      const addrMatch = fav.address?.toLowerCase().includes(q);
+      matchesSearch = nameMatch || catMatch || addrMatch;
+    }
+
+    return matchesCategory && matchesSearch;
   });
 
   return (
@@ -346,6 +359,23 @@ export default function FavoritesPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-7">
             {/* Left list */}
             <div className="lg:col-span-7 space-y-3">
+              {/* Local Search Input */}
+              <div className="relative">
+                <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
+                <input
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder={t('search_favorites_placeholder') || 'Cari favorit berdasarkan nama atau kategori...'}
+                  className="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-[#FD6825]/15 focus:border-[#FD6825] shadow-soft transition-all placeholder:text-gray-300"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                    <X size={14}/>
+                  </button>
+                )}
+              </div>
+
               {filteredFavorites.length === 0 ? (
                 <div className="text-center py-12 bg-white rounded-[20px] border border-gray-50 text-gray-400 font-bold text-sm">
                   {t('no_favorites_category') || 'Tidak ada favorit di kategori ini.'}

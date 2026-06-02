@@ -123,20 +123,7 @@ export default function AppLayout() {
       <Sidebar />
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Top Navigation Bar */}
-        <header className="h-20 shrink-0 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-200 z-40">
-          <div className="relative w-[440px]">
-            <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-gray-400">
-              <Search size={18} />
-            </div>
-            <input 
-              type="text" 
-              placeholder={t('search_placeholder')} 
-              className="w-full bg-white pl-13 pr-10 py-3 rounded-full border border-gray-200 shadow-soft focus:outline-none focus:ring-4 focus:ring-[#FD6825]/5 focus:border-[#FD6825] transition-all text-sm font-medium"
-            />
-            <div className="absolute inset-y-0 right-5 flex items-center pointer-events-none">
-              <kbd className="hidden sm:inline-block text-[10px] font-bold text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-200">/</kbd>
-            </div>
-          </div>
+        <header className="h-20 shrink-0 flex items-center justify-end px-8 bg-white/80 backdrop-blur-md border-b border-gray-200 z-40">
 
           <div className="flex items-center gap-7">
             {/* Bell Notifications */}

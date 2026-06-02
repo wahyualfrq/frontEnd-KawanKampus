@@ -21,6 +21,9 @@ export const translations = {
     // Topbar
     search_placeholder: 'Cari tempat di sekitar kampus...',
     search: 'Cari',
+    search_places_placeholder: 'Cari tempat dari hasil rekomendasi...',
+    search_favorites_placeholder: 'Cari favorit berdasarkan nama atau kategori...',
+    search_history_placeholder: 'Cari aktivitas riwayat...',
 
     // Settings General
     settings: 'Pengaturan',
@@ -262,6 +265,9 @@ export const translations = {
     // Topbar
     search_placeholder: 'Search places around campus...',
     search: 'Search',
+    search_places_placeholder: 'Search places from recommendations...',
+    search_favorites_placeholder: 'Search favorites by name or category...',
+    search_history_placeholder: 'Search activity history...',
 
     // Settings General
     settings: 'Settings',
