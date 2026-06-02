@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import AppLayout from '../components/layout/AppLayout';
+import LandingPage from '../pages/Landing';
 import LoginPage from '../pages/Login';
 import RegisterPage from '../pages/Register';
 import DashboardPage from '../pages/Dashboard';
@@ -10,19 +11,34 @@ import SettingsPage from '../pages/Settings';
 import FavoritesPage from '../pages/Favorites';
 import HistoryPage from '../pages/History';
 
+/**
+ * PrivateRoute: redirects unauthenticated users to /login.
+ */
 const PrivateRoute = ({ children }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
+/**
+ * PublicRoute: redirects authenticated users away from public auth pages to /places.
+ */
 const PublicRoute = ({ children }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  return !isAuthenticated ? children : <Navigate to="/dashboard" replace />;
+  return !isAuthenticated ? children : <Navigate to="/places" replace />;
 };
 
 export default function AppRoutes() {
   return (
     <Routes>
+      {/* ── Public routes (no sidebar/topbar) ── */}
+      <Route
+        path="/"
+        element={
+          <PublicRoute>
+            <LandingPage />
+          </PublicRoute>
+        }
+      />
       <Route
         path="/login"
         element={
@@ -40,6 +56,7 @@ export default function AppRoutes() {
         }
       />
 
+      {/* ── Protected routes (with AppLayout sidebar + topbar) ── */}
       <Route
         path="/"
         element={
@@ -48,7 +65,6 @@ export default function AppRoutes() {
           </PrivateRoute>
         }
       >
-        <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="chatbot" element={<ChatbotPage />} />
         <Route path="places" element={<PlacesPage />} />
@@ -57,7 +73,8 @@ export default function AppRoutes() {
         <Route path="history" element={<HistoryPage />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      {/* ── Wildcard: redirect unknown paths to landing ── */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
