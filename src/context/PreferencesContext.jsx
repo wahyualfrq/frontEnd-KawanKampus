@@ -14,7 +14,21 @@ export function PreferencesProvider({ children }) {
     const local = localStorage.getItem('preferences');
     if (local) {
       try {
-        return JSON.parse(local);
+        const parsed = JSON.parse(local);
+        const appNotifications = parsed.appNotifications !== undefined
+          ? parsed.appNotifications
+          : (parsed.pushNotifications !== undefined ? parsed.pushNotifications : true);
+        
+        return {
+          theme: parsed.theme || localStorage.getItem('theme') || 'light',
+          language: parsed.language || 'id',
+          distanceUnit: parsed.distanceUnit || 'meter',
+          timezone: parsed.timezone || 'WIB',
+          appNotifications,
+          chatbotHistoryEnabled: parsed.chatbotHistoryEnabled ?? true,
+          locationAccessEnabled: parsed.locationAccessEnabled ?? true,
+          privacyMode: parsed.privacyMode ?? false,
+        };
       } catch {
         // ignore
       }
@@ -24,8 +38,7 @@ export function PreferencesProvider({ children }) {
       language: 'id',
       distanceUnit: 'meter',
       timezone: 'WIB',
-      emailNotifications: true,
-      pushNotifications: true,
+      appNotifications: true,
       chatbotHistoryEnabled: true,
       locationAccessEnabled: true,
       privacyMode: false,
@@ -41,8 +54,7 @@ export function PreferencesProvider({ children }) {
         language: data.language || 'id',
         distanceUnit: data.distanceUnit || 'meter',
         timezone: data.timezone || 'WIB',
-        emailNotifications: data.emailNotifications ?? true,
-        pushNotifications: data.pushNotifications ?? true,
+        appNotifications: data.pushNotifications ?? true,
         chatbotHistoryEnabled: data.chatbotHistoryEnabled ?? true,
         locationAccessEnabled: data.locationAccessEnabled ?? true,
         privacyMode: data.privacyMode ?? false,
@@ -97,7 +109,8 @@ export function PreferencesProvider({ children }) {
 
     if (isAuthenticated) {
       try {
-        await settingsService.updatePreferences({ [field]: value });
+        const payloadField = field === 'appNotifications' ? 'pushNotifications' : field;
+        await settingsService.updatePreferences({ [payloadField]: value });
       } catch (e) {
         console.warn('[PreferencesContext] Failed to sync preference to backend:', e.message);
       }

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { usePreferences } from '../../context/PreferencesContext';
+import BrandLogo from '../common/BrandLogo';
 
 export default function Sidebar() {
   const location = useLocation();
@@ -25,17 +26,15 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="flex h-full w-[260px] flex-col sidebar-bg text-white">
+    <div className="hidden lg:flex h-full w-[260px] flex-col sidebar-bg text-white shrink-0">
       <div className="flex h-20 shrink-0 items-center px-6">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-[#FD6825] rounded-xl flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-[#FD6825]/20">K</div>
-          <span className="text-xl font-bold tracking-tight">KawanKampus</span>
-        </div>
+        <BrandLogo variant="full" size="sm" dark={true} />
       </div>
 
       <div className="flex flex-1 flex-col overflow-y-auto px-4 py-4">
         <nav className="flex-1 space-y-2">
           {navigation.map((item) => {
+
             const isActive = location.pathname === item.href;
             return (
               <Link

@@ -420,7 +420,7 @@ export default function ChatbotPage() {
 
   if (mode === 'place-flow') {
     return (
-      <div className="p-8 h-full">
+      <div className="p-4 sm:p-6 lg:p-8 h-full">
         <div className="flex flex-col h-full max-w-2xl mx-auto bg-white rounded-[24px] shadow-medium border border-gray-100 overflow-hidden">
 
           {/* Header */}
@@ -516,7 +516,7 @@ export default function ChatbotPage() {
                     </div>
                   ) : (
                     /* User bubble */
-                    <div className="flex items-end gap-3 max-w-[75%]">
+                    <div className="flex items-end gap-3 max-w-[90%] md:max-w-[75%]">
                       <div className="bg-[#FD6825] px-4 py-3 rounded-[18px] rounded-br-sm shadow-soft">
                         <p className="text-sm font-semibold text-white">{msg.text}</p>
                       </div>
@@ -550,7 +550,7 @@ export default function ChatbotPage() {
   // ════════════════════════════════════════════════════════════════════════════
 
   return (
-    <div className="p-8 h-full">
+    <div className="p-4 sm:p-6 lg:p-8 h-full">
       <div className="flex flex-col h-full max-w-4xl mx-auto bg-white rounded-[24px] shadow-medium border border-gray-100 overflow-hidden">
 
         {/* Header */}
@@ -601,7 +601,7 @@ export default function ChatbotPage() {
                 className={cn('flex w-full', msg.sender === 'user' ? 'justify-end' : 'justify-start')}
               >
                 <div className={cn(
-                  'flex max-w-[85%] items-end gap-3',
+                  'flex max-w-[92%] md:max-w-[85%] items-end gap-3',
                   msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'
                 )}>
                   {msg.sender === 'user' ? <UserAvatar /> : <BotAvatar />}

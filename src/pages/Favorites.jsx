@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   MapPin, Star, Bookmark, Share2, Trash2, Navigation,
   ExternalLink, Loader2, Grid, Printer, Book, Utensils, Coffee, AlertCircle,
-  ChevronDown, X
+  ChevronDown, X, Search
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../utils/cn';
@@ -105,6 +105,7 @@ export default function FavoritesPage() {
   const [activeChip, setActiveChip] = useState('all');
   const [activeLainnya, setActiveLainnya] = useState(null);
   const [lainnyaOpen, setLainnyaOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const lainnyaRef = useRef(null);
 
   const fetchFavorites = async () => {
@@ -170,22 +171,34 @@ export default function FavoritesPage() {
 
   // Filter logic
   const filteredFavorites = favorites.filter(fav => {
-    if (activeChip === 'all') return true;
-
-    if (activeChip === 'lainnya') {
-      if (activeLainnya) {
-        // Filter strictly by the selected subcategory from the dropdown
-        const sub = getFavoriteSubcategory(fav).toLowerCase();
-        return sub === activeLainnya.toLowerCase();
+    // 1. Category filter
+    let matchesCategory = true;
+    if (activeChip !== 'all') {
+      if (activeChip === 'lainnya') {
+        if (activeLainnya) {
+          const sub = getFavoriteSubcategory(fav).toLowerCase();
+          matchesCategory = sub === activeLainnya.toLowerCase();
+        } else {
+          const groupId = getChip(fav).id;
+          matchesCategory = groupId === 'lainnya';
+        }
       } else {
-        // Return favorites in the general "Lainnya" category (not matching main categories)
         const groupId = getChip(fav).id;
-        return groupId === 'lainnya';
+        matchesCategory = groupId === activeChip;
       }
     }
 
-    const groupId = getChip(fav).id;
-    return groupId === activeChip;
+    // 2. Search query filter
+    let matchesSearch = true;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const nameMatch = fav.name?.toLowerCase().includes(q);
+      const catMatch = fav.category?.toLowerCase().includes(q) || fav.rawCategory?.toLowerCase().includes(q);
+      const addrMatch = fav.address?.toLowerCase().includes(q);
+      matchesSearch = nameMatch || catMatch || addrMatch;
+    }
+
+    return matchesCategory && matchesSearch;
   });
 
   return (
@@ -346,6 +359,23 @@ export default function FavoritesPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-7">
             {/* Left list */}
             <div className="lg:col-span-7 space-y-3">
+              {/* Local Search Input */}
+              <div className="relative">
+                <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
+                <input
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder={t('search_favorites_placeholder') || 'Cari favorit berdasarkan nama atau kategori...'}
+                  className="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-[#FD6825]/15 focus:border-[#FD6825] shadow-soft transition-all placeholder:text-gray-300"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                    <X size={14}/>
+                  </button>
+                )}
+              </div>
+
               {filteredFavorites.length === 0 ? (
                 <div className="text-center py-12 bg-white rounded-[20px] border border-gray-50 text-gray-400 font-bold text-sm">
                   {t('no_favorites_category') || 'Tidak ada favorit di kategori ini.'}
@@ -397,8 +427,8 @@ export default function FavoritesPage() {
               )}
             </div>
 
-            {/* Right details */}
-            <div className="lg:col-span-5 sticky top-28 h-fit">
+            {/* Right details (Desktop only) */}
+            <div className="hidden lg:block lg:col-span-5 sticky top-28 h-fit">
               <AnimatePresence mode="wait">
                 {selectedFav ? (
                   <motion.div
@@ -511,6 +541,129 @@ export default function FavoritesPage() {
                 )}
               </AnimatePresence>
             </div>
+
+            {/* Mobile/Tablet Bottom Sheet Overlay */}
+            <AnimatePresence>
+              {selectedFav && (
+                <div className="lg:hidden fixed inset-0 z-50 flex items-end justify-center bg-black/45 backdrop-blur-sm">
+                  <div className="absolute inset-0" onClick={() => setSelectedFav(null)} />
+                  <motion.div
+                    initial={{ y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "100%" }}
+                    transition={{ type: "spring", damping: 25, stiffness: 250 }}
+                    className="relative w-full max-w-lg bg-white rounded-t-[32px] overflow-hidden shadow-2xl z-10 max-h-[85vh] flex flex-col"
+                  >
+                    <div className="w-full flex justify-center py-3 shrink-0">
+                      <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
+                    </div>
+                    <button
+                      onClick={() => setSelectedFav(null)}
+                      className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm border border-gray-150 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-all shadow-sm"
+                    >
+                      <X size={16} />
+                    </button>
+                    <div className="overflow-y-auto flex-1 pb-8">
+                      <div className="relative h-44 flex items-center justify-center" style={{ background: `${getChip(selectedFav).pinColor}14` }}>
+                        <svg className="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
+                          {Array.from({ length: 6 }).map((_, i) => <line key={`h${i}`} x1="0" y1={`${i * 20}%`} x2="100%" y2={`${i * 20}%`} stroke="#000" strokeWidth="0.5"/>)}
+                          {Array.from({ length: 6 }).map((_, i) => <line key={`v${i}`} x1={`${i * 20}%`} y1="0" x2={`${i * 20}%`} y2="100%" stroke="#000" strokeWidth="0.5"/>)}
+                        </svg>
+                        <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"
+                          style={{ background: `${getChip(selectedFav).pinColor}22`, color: getChip(selectedFav).pinColor }}>
+                          {(() => {
+                            const chip = getChip(selectedFav);
+                            return <chip.Icon size={38}/>;
+                          })()}
+                        </div>
+                        <div className="absolute bottom-4 left-5">
+                          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full text-white" style={{ background: getChip(selectedFav).pinColor }}>
+                            {selectedFav.category}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="p-5 space-y-4">
+                        <div>
+                          <h3 className="text-lg font-black text-gray-900 leading-tight">{selectedFav.name}</h3>
+                        </div>
+
+                        {selectedFav.address && (
+                          <div className="flex items-start gap-2 text-xs text-gray-500 bg-gray-50/50 p-3.5 rounded-2xl border border-gray-100/50">
+                            <span className="font-bold text-gray-400 uppercase tracking-wider shrink-0 mt-0.5">{t('address')}</span>
+                            <span className="leading-relaxed">{selectedFav.address}</span>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-3 gap-3 border-t border-b border-gray-50 py-3.5">
+                          <button className="flex flex-col items-center gap-1.5 group">
+                            <div className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all bg-[#FFF8EC] text-[#FD6825]">
+                              <Bookmark size={17} fill="#FD6825"/>
+                            </div>
+                            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('save')}</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (navigator.share) {
+                                navigator.share({ title: selectedFav.name, url: selectedFav.mapLink });
+                              } else {
+                                navigator.clipboard.writeText(selectedFav.mapLink);
+                                alert('Link disalin!');
+                              }
+                            }}
+                            className="flex flex-col items-center gap-1.5 group"
+                          >
+                            <div className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all bg-gray-50 text-gray-400 group-hover:bg-gray-100">
+                              <Share2 size={17}/>
+                            </div>
+                            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('share')}</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              handleRemoveFavorite(e, selectedFav.id, selectedFav.name);
+                              setSelectedFav(null);
+                            }}
+                            className="flex flex-col items-center gap-1.5 group"
+                          >
+                            <div className="w-11 h-11 rounded-2xl bg-gray-50 text-gray-400 group-hover:bg-red-50 group-hover:text-red-500 transition-all flex items-center justify-center">
+                              <Trash2 size={17}/>
+                            </div>
+                            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('delete')}</span>
+                          </button>
+                        </div>
+
+                        {selectedFav.mapLink ? (
+                          <a
+                            href={selectedFav.mapLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => {
+                              // Record open route history
+                              historyService.createHistory('OPENED_MAP_ROUTE', {
+                                placeId: selectedFav.placeId || '',
+                                placeName: selectedFav.name,
+                                category: selectedFav.category || '',
+                                campus: getNearestCampus(selectedFav.lat, selectedFav.lon || selectedFav.lng),
+                                mapLink: selectedFav.mapLink,
+                                distanceText: selectedFav.distanceText || ''
+                              });
+                            }}
+                            className="w-full bg-[#FD6825] hover:bg-[#E85A1D] py-3.5 rounded-[16px] text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#FD6825]/25 hover:scale-[1.01] active:scale-95 transition-all"
+                          >
+                            <ExternalLink size={14}/>
+                            {t('open_in_google_maps')}
+                          </a>
+                        ) : (
+                          <button disabled className="w-full bg-gray-100 py-3.5 rounded-[16px] text-gray-400 font-extrabold text-xs flex items-center justify-center gap-2 cursor-not-allowed">
+                            <Navigation size={14}/> {t('not_available')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
           </div>
         </>
       )}

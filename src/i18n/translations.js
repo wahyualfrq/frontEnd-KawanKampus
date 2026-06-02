@@ -21,6 +21,9 @@ export const translations = {
     // Topbar
     search_placeholder: 'Cari tempat di sekitar kampus...',
     search: 'Cari',
+    search_places_placeholder: 'Cari tempat dari hasil rekomendasi...',
+    search_favorites_placeholder: 'Cari favorit berdasarkan nama atau kategori...',
+    search_history_placeholder: 'Cari aktivitas riwayat...',
 
     // Settings General
     settings: 'Pengaturan',
@@ -77,6 +80,9 @@ export const translations = {
     email_notifications_desc: 'Dapatkan update pengingat tugas kuliah via email',
     push_notifications: 'Notifikasi Push Browser',
     push_notifications_desc: 'Dapatkan notifikasi langsung di browser desktop kamu',
+    app_notifications: 'Notifikasi Aplikasi',
+    app_notifications_desc: 'Tampilkan aktivitas terbaru di ikon notifikasi aplikasi.',
+    notifications_disabled: 'Notifikasi aplikasi dinonaktifkan.',
 
     // Settings Security Section
     current_password: 'Kata Sandi Sekarang',
@@ -86,14 +92,12 @@ export const translations = {
 
     // Settings Privacy Section
     privacy_section_title: 'Data & Privasi Akun',
-    save_chatbot_history: 'Simpan Riwayat Chatbot AI',
-    save_chatbot_history_desc: 'Simpan sesi diskusi Bantu Tugas dengan AI KawanKampus',
-    location_access: 'Akses Lokasi Peta',
-    location_access_desc: 'Gunakan geolokasi browser untuk pencarian jarak terdekat tempat print/fotokopi',
-    anonymous_mode: 'Mode Samaran (Anonymous Mode)',
-    anonymous_mode_desc: 'Sembunyikan detail nama dan identitas akademik pada obrolan chatbot',
-    clear_history_title: 'Pembersihan Riwayat',
-    clear_history_desc: 'Menghapus seluruh rekaman riwayat tempat yang dikunjungi, pencarian rekomendasi, dan log obrolan chatbot AI secara permanen.',
+    save_chat_history: 'Simpan Riwayat Chatbot AI',
+    save_chat_history_desc: 'Simpan sesi diskusi Bantu Tugas agar dapat dilihat kembali di riwayat.',
+    clear_activity_history: 'Bersihkan Riwayat Aktivitas',
+    clear_activity_history_desc: 'Menghapus riwayat pencarian, rute, favorit, chatbot, dan aktivitas tugas dari akun ini.',
+    confirm_clear_history: 'Yakin ingin menghapus seluruh riwayat aktivitas?',
+    clear_history_success: 'Riwayat berhasil dibersihkan.',
     clear_history_button: 'Bersihkan Riwayat',
 
     // Settings About Section
@@ -262,6 +266,9 @@ export const translations = {
     // Topbar
     search_placeholder: 'Search places around campus...',
     search: 'Search',
+    search_places_placeholder: 'Search places from recommendations...',
+    search_favorites_placeholder: 'Search favorites by name or category...',
+    search_history_placeholder: 'Search activity history...',
 
     // Settings General
     settings: 'Settings',
@@ -318,6 +325,9 @@ export const translations = {
     email_notifications_desc: 'Get task reminders via email',
     push_notifications: 'Browser Push Notifications',
     push_notifications_desc: 'Get instant desktop push notifications in your browser',
+    app_notifications: 'App Notifications',
+    app_notifications_desc: 'Show recent activities on the app notification icon.',
+    notifications_disabled: 'App notifications are disabled.',
 
     // Settings Security Section
     current_password: 'Current Password',
@@ -327,14 +337,12 @@ export const translations = {
 
     // Settings Privacy Section
     privacy_section_title: 'Data & Account Privacy',
-    save_chatbot_history: 'Save Chatbot AI History',
-    save_chatbot_history_desc: 'Save Bantu Tugas discussion sessions with KawanKampus AI',
-    location_access: 'Map Location Access',
-    location_access_desc: 'Use browser geolocation to find nearby photocopy/printing shops',
-    anonymous_mode: 'Anonymous Mode',
-    anonymous_mode_desc: 'Hide name and academic details in chatbot conversations',
-    clear_history_title: 'Clear History',
-    clear_history_desc: 'Permanently delete all logs of visited places, search recommendations, and AI chatbot conversations.',
+    save_chat_history: 'Save AI Chatbot History',
+    save_chat_history_desc: 'Save Bantu Tugas discussion sessions so they can be viewed again in history.',
+    clear_activity_history: 'Clear Activity History',
+    clear_activity_history_desc: 'Delete search, route, favorite, chatbot, and task activity history from this account.',
+    confirm_clear_history: 'Are you sure you want to clear all activity history?',
+    clear_history_success: 'History cleared successfully.',
     clear_history_button: 'Clear History',
 
     // Settings About Section

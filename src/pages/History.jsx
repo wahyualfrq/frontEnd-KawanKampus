@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Clock, Search, Navigation, Bookmark, Bot, Trash2,
   AlertCircle, Loader2, Calendar, ShieldAlert, ArrowRight, ExternalLink,
-  Plus, Pencil, CheckCircle2, ChevronRight, LayoutList
+  Plus, Pencil, CheckCircle2, ChevronRight, LayoutList, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../utils/cn';
@@ -68,6 +68,7 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const { t, formatTime: ctxFormatTime, formatDateTime: ctxFormatDateTime } = usePreferences();
 
   const fetchHistories = async () => {
@@ -108,12 +109,13 @@ export default function HistoryPage() {
 
   // Filter items
   const filteredHistories = histories.filter(item => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'searched') return item.action === 'SEARCHED_PLACE';
-    if (activeTab === 'visited') return item.action === 'OPENED_MAP_ROUTE';
-    if (activeTab === 'saved') return item.action === 'SAVED_FAVORITE';
-    if (activeTab === 'chatbot') return item.action === 'ASKED_CHATBOT' || item.action === 'CHATBOT_MESSAGE';
-    if (activeTab === 'kanban') {
+    // 1. Tab filter
+    let matchesTab = true;
+    if (activeTab === 'searched') matchesTab = item.action === 'SEARCHED_PLACE';
+    else if (activeTab === 'visited') matchesTab = item.action === 'OPENED_MAP_ROUTE';
+    else if (activeTab === 'saved') matchesTab = item.action === 'SAVED_FAVORITE';
+    else if (activeTab === 'chatbot') matchesTab = item.action === 'ASKED_CHATBOT' || item.action === 'CHATBOT_MESSAGE';
+    else if (activeTab === 'kanban') {
       const kanbanActions = [
         'CREATED_TASK', 'TASK_CREATED',
         'UPDATED_TASK', 'TASK_UPDATED',
@@ -121,8 +123,35 @@ export default function HistoryPage() {
         'COMPLETED_TASK', 'TASK_COMPLETED',
         'DELETED_TASK', 'TASK_DELETED'
       ];
-      return kanbanActions.includes(item.action);
+      matchesTab = kanbanActions.includes(item.action);
     }
+
+    if (!matchesTab) return false;
+
+    // 2. Search query filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const actionStyle = getActionStyle(item.action, t);
+      const actionLabel = actionStyle.label?.toLowerCase() || '';
+      const actionType = item.action?.toLowerCase() || '';
+
+      const metaPlaceName = (item.metadata?.placeName || item.metadata?.name || '').toLowerCase();
+      const metaTaskTitle = (item.metadata?.title || '').toLowerCase();
+      const metaMsgPreview = (item.metadata?.messagePreview || item.metadata?.message || '').toLowerCase();
+      const metaCategory = (item.metadata?.category || '').toLowerCase();
+      const metaCampus = (item.metadata?.campus || '').toLowerCase();
+
+      return (
+        actionLabel.includes(q) ||
+        actionType.includes(q) ||
+        metaPlaceName.includes(q) ||
+        metaTaskTitle.includes(q) ||
+        metaMsgPreview.includes(q) ||
+        metaCategory.includes(q) ||
+        metaCampus.includes(q)
+      );
+    }
+
     return true;
   });
 
@@ -167,7 +196,7 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-[1000px] mx-auto pb-10 animate-in fade-in duration-500 p-6">
+    <div className="space-y-6 max-w-[1000px] mx-auto pb-10 animate-in fade-in duration-500">
       
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -215,6 +244,25 @@ export default function HistoryPage() {
         })}
       </div>
 
+      {/* Search Input */}
+      {histories.length > 0 && (
+        <div className="relative">
+          <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
+          <input
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder={t('search_history_placeholder') || 'Cari aktivitas riwayat...'}
+            className="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-[#FD6825]/15 focus:border-[#FD6825] shadow-soft transition-all placeholder:text-gray-300"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+              <X size={14}/>
+            </button>
+          )}
+        </div>
+      )}
+ 
       {/* Main List */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">

@@ -196,15 +196,6 @@ export default function SettingsPage() {
 
   // Notifications Toggle
   const handleNotificationToggle = async (field, value) => {
-    if (field === 'pushNotifications' && value) {
-      if ('Notification' in window) {
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-          handleToast(false, 'Akses notifikasi browser ditolak.');
-          return;
-        }
-      }
-    }
     await handlePreferenceUpdate(field, value);
   };
 
@@ -230,11 +221,11 @@ export default function SettingsPage() {
 
   // Clear Activity logs
   const handleClearHistory = async () => {
-    if (!window.confirm(t('confirm') || 'Apakah Anda yakin ingin menghapus seluruh riwayat tempat dan obrolan AI?')) return;
+    if (!window.confirm(t('confirm_clear_history') || 'Yakin ingin menghapus seluruh riwayat aktivitas?')) return;
     try {
       setLoading(true);
       await settingsService.clearHistory();
-      handleToast(true, t('success') || 'Semua riwayat obrolan AI dan tempat berhasil dibersihkan.');
+      handleToast(true, t('clear_history_success') || 'Riwayat berhasil dibersihkan.');
     } catch (err) {
       handleToast(false, t('failed'));
     } finally {
@@ -264,7 +255,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto animate-in fade-in duration-500 p-6">
+    <div className="max-w-[1200px] mx-auto animate-in fade-in duration-500">
       
       {/* Title */}
       <div className="mb-6 flex justify-between items-start gap-4 flex-wrap">
@@ -272,7 +263,6 @@ export default function SettingsPage() {
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">{t('settings')}</h1>
           <p className="text-sm text-gray-400 font-medium mt-1">{t('settings_desc')}</p>
         </div>
-        {loading && <Loader2 className="animate-spin text-[#FD6825] mt-2" size={24}/>}
       </div>
 
       {/* Messages */}
@@ -287,11 +277,37 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {/* Top Menu Tabs for Mobile/Tablet */}
+      <div className="lg:hidden flex items-center gap-2 overflow-x-auto scrollbar-hide pb-3.5 mb-2 w-full">
+        {MENU.map((item) => {
+          const isActive = activeMenu === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveMenu(item.id);
+                setErrorMsg('');
+                setSuccessMsg('');
+              }}
+              className={cn(
+                'flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border shadow-soft shrink-0 cursor-pointer',
+                isActive 
+                  ? 'bg-gray-900 text-white border-transparent' 
+                  : 'bg-white text-gray-600 border-gray-100 hover:border-gray-200'
+              )}
+            >
+              <item.icon size={13}/>
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Main Container */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-7">
 
         {/* ── Left menu sidebar ── */}
-        <div className="lg:col-span-3">
+        <div className="hidden lg:block lg:col-span-3">
           <div className="bg-white rounded-[20px] border border-gray-100 shadow-soft overflow-hidden">
             {MENU.map((item) => {
               const isActive = activeMenu === item.id;
@@ -614,26 +630,13 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-xl border border-gray-100">
                   <div>
-                    <h4 className="text-sm font-bold text-gray-800">{t('email_notifications')}</h4>
-                    <p className="text-xs text-gray-400 mt-0.5">{t('email_notifications_desc')}</p>
+                    <h4 className="text-sm font-bold text-gray-800">{t('app_notifications')}</h4>
+                    <p className="text-xs text-gray-400 mt-0.5">{t('app_notifications_desc')}</p>
                   </div>
                   <input
                     type="checkbox"
-                    checked={preferences.emailNotifications}
-                    onChange={e => handleNotificationToggle('emailNotifications', e.target.checked)}
-                    className="w-4 h-4 text-[#FD6825] focus:ring-[#FD6825] border-gray-300 rounded cursor-pointer"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-xl border border-gray-100">
-                  <div>
-                    <h4 className="text-sm font-bold text-gray-800">{t('push_notifications')}</h4>
-                    <p className="text-xs text-gray-400 mt-0.5">{t('push_notifications_desc')}</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={preferences.pushNotifications}
-                    onChange={e => handleNotificationToggle('pushNotifications', e.target.checked)}
+                    checked={preferences.appNotifications}
+                    onChange={e => handleNotificationToggle('appNotifications', e.target.checked)}
                     className="w-4 h-4 text-[#FD6825] focus:ring-[#FD6825] border-gray-300 rounded cursor-pointer"
                   />
                 </div>
@@ -728,8 +731,8 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-xl border border-gray-100">
                   <div>
-                    <h4 className="text-sm font-bold text-gray-800">{t('save_chatbot_history')}</h4>
-                    <p className="text-xs text-gray-400 mt-0.5">{t('save_chatbot_history_desc')}</p>
+                    <h4 className="text-sm font-bold text-gray-800">{t('save_chat_history')}</h4>
+                    <p className="text-xs text-gray-400 mt-0.5">{t('save_chat_history_desc')}</p>
                   </div>
                   <input
                     type="checkbox"
@@ -739,36 +742,10 @@ export default function SettingsPage() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-xl border border-gray-100">
-                  <div>
-                    <h4 className="text-sm font-bold text-gray-800">{t('location_access')}</h4>
-                    <p className="text-xs text-gray-400 mt-0.5">{t('location_access_desc')}</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={preferences.locationAccessEnabled}
-                    onChange={e => handlePreferenceUpdate('locationAccessEnabled', e.target.checked)}
-                    className="w-4 h-4 text-[#FD6825] focus:ring-[#FD6825] border-gray-300 rounded cursor-pointer"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-xl border border-gray-100">
-                  <div>
-                    <h4 className="text-sm font-bold text-gray-800">{t('anonymous_mode')}</h4>
-                    <p className="text-xs text-gray-400 mt-0.5">{t('anonymous_mode_desc')}</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={preferences.privacyMode}
-                    onChange={e => handlePreferenceUpdate('privacyMode', e.target.checked)}
-                    className="w-4 h-4 text-[#FD6825] focus:ring-[#FD6825] border-gray-300 rounded cursor-pointer"
-                  />
-                </div>
-
                 <div className="border-t border-gray-50 pt-5">
-                  <h4 className="text-sm font-bold text-gray-800 mb-2">{t('clear_history_title')}</h4>
+                  <h4 className="text-sm font-bold text-gray-800 mb-2">{t('clear_activity_history')}</h4>
                   <p className="text-xs text-gray-400 mb-4 leading-relaxed">
-                    {t('clear_history_desc')}
+                    {t('clear_activity_history_desc')}
                   </p>
                   <button
                     onClick={handleClearHistory}
