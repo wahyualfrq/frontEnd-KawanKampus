@@ -80,6 +80,9 @@ export const translations = {
     email_notifications_desc: 'Dapatkan update pengingat tugas kuliah via email',
     push_notifications: 'Notifikasi Push Browser',
     push_notifications_desc: 'Dapatkan notifikasi langsung di browser desktop kamu',
+    app_notifications: 'Notifikasi Aplikasi',
+    app_notifications_desc: 'Tampilkan aktivitas terbaru di ikon notifikasi aplikasi.',
+    notifications_disabled: 'Notifikasi aplikasi dinonaktifkan.',
 
     // Settings Security Section
     current_password: 'Kata Sandi Sekarang',
@@ -324,6 +327,9 @@ export const translations = {
     email_notifications_desc: 'Get task reminders via email',
     push_notifications: 'Browser Push Notifications',
     push_notifications_desc: 'Get instant desktop push notifications in your browser',
+    app_notifications: 'App Notifications',
+    app_notifications_desc: 'Show recent activities on the app notification icon.',
+    notifications_disabled: 'App notifications are disabled.',
 
     // Settings Security Section
     current_password: 'Current Password',

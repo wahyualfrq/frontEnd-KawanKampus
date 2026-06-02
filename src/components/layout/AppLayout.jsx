@@ -9,7 +9,7 @@ import { cn } from '../../utils/cn';
 
 export default function AppLayout() {
   const { user, logout } = useAuthStore();
-  const { t, formatTime } = usePreferences();
+  const { preferences, t, formatTime } = usePreferences();
   const navigate = useNavigate();
 
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
@@ -134,7 +134,7 @@ export default function AppLayout() {
                   className="relative p-2 text-gray-500 hover:text-gray-900 transition-all hover:bg-gray-50 rounded-xl"
                 >
                   <Bell size={20} />
-                  {recentActivities.length > 0 && (
+                  {preferences.appNotifications && recentActivities.length > 0 && (
                     <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#FD6825] text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-in zoom-in duration-200">
                       {Math.min(recentActivities.length, 9)}
                     </span>
@@ -145,7 +145,7 @@ export default function AppLayout() {
                   <div className="absolute right-0 mt-2 w-80 bg-white rounded-[24px] shadow-medium border border-gray-100 py-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="px-5 pb-3 border-b border-gray-50 flex items-center justify-between">
                       <span className="text-sm font-bold text-gray-900">{t('notifications')}</span>
-                      {recentActivities.length > 0 && (
+                      {preferences.appNotifications && recentActivities.length > 0 && (
                         <span className="text-[10px] font-bold px-2 py-0.5 bg-[#FD6825]/10 text-[#FD6825] rounded-full">
                           {recentActivities.length}
                         </span>
@@ -153,7 +153,16 @@ export default function AppLayout() {
                     </div>
 
                     <div className="max-h-[300px] overflow-y-auto py-2">
-                      {displayActivities.length > 0 ? (
+                      {!preferences.appNotifications ? (
+                        <div className="py-8 flex flex-col items-center justify-center text-center px-5 space-y-3">
+                          <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center border border-dashed border-gray-200 text-gray-300">
+                            <Bell size={18} />
+                          </div>
+                          <div className="space-y-0.5">
+                            <p className="text-xs font-bold text-gray-700">{t('notifications_disabled')}</p>
+                          </div>
+                        </div>
+                      ) : displayActivities.length > 0 ? (
                         displayActivities.map((item) => (
                           <div 
                             key={item.id}

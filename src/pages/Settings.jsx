@@ -196,15 +196,6 @@ export default function SettingsPage() {
 
   // Notifications Toggle
   const handleNotificationToggle = async (field, value) => {
-    if (field === 'pushNotifications' && value) {
-      if ('Notification' in window) {
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-          handleToast(false, 'Akses notifikasi browser ditolak.');
-          return;
-        }
-      }
-    }
     await handlePreferenceUpdate(field, value);
   };
 
@@ -614,26 +605,13 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-xl border border-gray-100">
                   <div>
-                    <h4 className="text-sm font-bold text-gray-800">{t('email_notifications')}</h4>
-                    <p className="text-xs text-gray-400 mt-0.5">{t('email_notifications_desc')}</p>
+                    <h4 className="text-sm font-bold text-gray-800">{t('app_notifications')}</h4>
+                    <p className="text-xs text-gray-400 mt-0.5">{t('app_notifications_desc')}</p>
                   </div>
                   <input
                     type="checkbox"
-                    checked={preferences.emailNotifications}
-                    onChange={e => handleNotificationToggle('emailNotifications', e.target.checked)}
-                    className="w-4 h-4 text-[#FD6825] focus:ring-[#FD6825] border-gray-300 rounded cursor-pointer"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-xl border border-gray-100">
-                  <div>
-                    <h4 className="text-sm font-bold text-gray-800">{t('push_notifications')}</h4>
-                    <p className="text-xs text-gray-400 mt-0.5">{t('push_notifications_desc')}</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={preferences.pushNotifications}
-                    onChange={e => handleNotificationToggle('pushNotifications', e.target.checked)}
+                    checked={preferences.appNotifications}
+                    onChange={e => handleNotificationToggle('appNotifications', e.target.checked)}
                     className="w-4 h-4 text-[#FD6825] focus:ring-[#FD6825] border-gray-300 rounded cursor-pointer"
                   />
                 </div>
