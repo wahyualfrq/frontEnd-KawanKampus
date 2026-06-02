@@ -54,7 +54,7 @@ export function normalizePlace(item, idx = 0, fallbackCategory = '') {
 
   const name     = item.name     || item.Nama_Tempat || item.nama || item.Nama || `Tempat ${idx + 1}`;
   const category = item.category || item.Kategori_Awal || item.kategori || item.Kategori || fallbackCategory || '';
-  const mapLink  = item.mapLink  || item.Google_Maps_Link || item.map_link || item.maps_url || item.google_maps_url || '';
+  const mapLink  = item.mapLink  || item.Google_Maps_Link || item.map_link || item.googleMapsUrl || item.google_maps_url || item.maps_url || item.url || item.link || '';
 
   // Parse coordinates if they are provided, otherwise extract from mapLink query
   let lat = item.lat || item.Latitude  || item.latitude  || null;

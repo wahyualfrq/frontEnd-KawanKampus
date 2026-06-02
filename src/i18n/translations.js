@@ -214,6 +214,21 @@ export const translations = {
     notif_created_task: 'Tugas baru dibuat',
     notif_updated_task: 'Tugas diperbarui',
     notif_completed_task: 'Tugas diselesaikan',
+    notif_deleted_task: 'Tugas telah dihapus',
+    notif_moved_task: 'Status tugas diubah',
+    notif_removed_favorite: 'Tempat dihapus dari favorit',
+
+    history_searched_place_title: 'Mencari rekomendasi tempat {category}',
+    history_searched_place_desc: 'Di sekitar {campus}',
+    history_opened_route_title: 'Membuka rute ke {placeName}',
+    history_saved_favorite_title: 'Menyimpan tempat ke favorit',
+    history_saved_favorite_desc: '{placeName} · {category}',
+    history_removed_favorite_title: 'Menghapus tempat dari favorit',
+    history_removed_favorite_desc: '{placeName} · {category}',
+    history_asked_chatbot_title: 'Bertanya ke Chatbot AI',
+    history_asked_chatbot_desc: '{messagePreview}',
+    history_created_task_title: 'Tugas baru dibuat',
+    history_created_task_desc: 'Kamu menambahkan tugas: {title}',
 
     // Common
     loading: 'Memuat...',
@@ -440,6 +455,21 @@ export const translations = {
     notif_created_task: 'New task created',
     notif_updated_task: 'Task updated',
     notif_completed_task: 'Task completed',
+    notif_deleted_task: 'Task deleted',
+    notif_moved_task: 'Task status changed',
+    notif_removed_favorite: 'Place removed from favorites',
+
+    history_searched_place_title: 'Searching recommendations for {category}',
+    history_searched_place_desc: 'Around {campus}',
+    history_opened_route_title: 'Opening route to {placeName}',
+    history_saved_favorite_title: 'Saved place to favorites',
+    history_saved_favorite_desc: '{placeName} · {category}',
+    history_removed_favorite_title: 'Removed place from favorites',
+    history_removed_favorite_desc: '{placeName} · {category}',
+    history_asked_chatbot_title: 'Asked AI Chatbot',
+    history_asked_chatbot_desc: '{messagePreview}',
+    history_created_task_title: 'New task created',
+    history_created_task_desc: 'You added a task: {title}',
 
     // Common
     loading: 'Loading...',

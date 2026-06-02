@@ -35,9 +35,11 @@ function getActionStyle(action, t) {
     case 'SEARCHED_PLACE':
       return { label: t('history_searched') || 'Pencarian', color: 'text-blue-600 bg-blue-50 border-blue-100', Icon: Search };
     case 'OPENED_MAP_ROUTE':
-      return { label: t('history_visited') || 'Dikunjungi', color: 'text-[#FD6825] bg-orange-50 border-orange-100', Icon: Navigation };
+      return { label: t('history_visited') || 'Dikunjungi', color: 'text-blue-600 bg-blue-50 border-blue-100', Icon: Navigation };
     case 'SAVED_FAVORITE':
-      return { label: t('history_saved') || 'Disimpan', color: 'text-yellow-600 bg-yellow-50 border-yellow-100', Icon: Bookmark };
+      return { label: t('history_saved') || 'Disimpan', color: 'text-amber-600 bg-[#FFF8EC] border-[#FDC439]/20', Icon: Bookmark };
+    case 'REMOVED_FAVORITE':
+      return { label: t('history_saved') || 'Disimpan', color: 'text-red-600 bg-red-50 border-red-100', Icon: Trash2 };
     case 'ASKED_CHATBOT':
     case 'CHATBOT_MESSAGE':
       return { label: t('history_chatbot') || 'Chatbot AI', color: 'text-purple-600 bg-purple-50 border-purple-100', Icon: Bot };
@@ -296,39 +298,76 @@ export default function HistoryPage() {
 
                             {/* Main Title/Activity Summary */}
                             {item.action === 'SEARCHED_PLACE' && (
-                              <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
-                                Mencari rekomendasi tempat <strong>{item.metadata?.category || 'Umum'}</strong> di sekitar <strong>{item.metadata?.campus || 'Kampus'}</strong>
-                              </h3>
+                              <>
+                                <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                  {t('history_searched_place_title', { category: item.metadata?.category || 'Umum' })}
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-1 font-medium">
+                                  {t('history_searched_place_desc', { campus: item.metadata?.campus || 'Kampus' })}
+                                </p>
+                              </>
                             )}
                             {item.action === 'OPENED_MAP_ROUTE' && (
-                              <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
-                                Membuka rute jalan ke <strong>{item.metadata?.name}</strong> di Google Maps
-                              </h3>
+                              <>
+                                <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                  {t('history_opened_route_title', { placeName: item.metadata?.placeName || item.metadata?.name || 'Tempat' })}
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-1 font-medium">
+                                  {(() => {
+                                    const cat = item.metadata?.category || 'Tempat';
+                                    const dist = item.metadata?.distanceText;
+                                    return dist && dist !== '-' ? `${cat} · ${dist}` : cat;
+                                  })()}
+                                </p>
+                              </>
                             )}
                             {item.action === 'SAVED_FAVORITE' && (
-                              <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
-                                Menyimpan tempat <strong>{item.metadata?.name}</strong> ({item.metadata?.category}) ke Favorit
-                              </h3>
-                            )}
-                            {(item.action === 'ASKED_CHATBOT' || item.action === 'CHATBOT_MESSAGE') && (
-                              <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
-                                Tanya AI: <em className="text-gray-500 font-medium">"{item.metadata?.message}"</em>
-                              </h3>
+                              <>
+                                <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                  {t('history_saved_favorite_title')}
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-1 font-medium">
+                                  {t('history_saved_favorite_desc', {
+                                    placeName: item.metadata?.placeName || item.metadata?.name || 'Tempat',
+                                    category: item.metadata?.category || 'Favorit'
+                                  })}
+                                </p>
+                              </>
                             )}
                             {item.action === 'REMOVED_FAVORITE' && (
-                              <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
-                                Menghapus tempat <strong>{item.metadata?.name}</strong> dari daftar Favorit
-                              </h3>
+                              <>
+                                <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                  {t('history_removed_favorite_title')}
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-1 font-medium">
+                                  {t('history_removed_favorite_desc', {
+                                    placeName: item.metadata?.placeName || item.metadata?.name || 'Tempat',
+                                    category: item.metadata?.category || 'Favorit'
+                                  })}
+                                </p>
+                              </>
+                            )}
+                            {(item.action === 'ASKED_CHATBOT' || item.action === 'CHATBOT_MESSAGE') && (
+                              <>
+                                <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                  {t('history_asked_chatbot_title')}
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-1 font-medium">
+                                  {t('history_asked_chatbot_desc', {
+                                    messagePreview: item.metadata?.messagePreview || item.metadata?.message || ''
+                                  })}
+                                </p>
+                              </>
                             )}
 
                             {/* Kanban Tasks Titles & Descriptions */}
                             {['CREATED_TASK', 'TASK_CREATED'].includes(item.action) && (
                               <>
                                 <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
-                                  {t('task_created_history') || 'Tugas baru dibuat'}
+                                  {t('history_created_task_title') || 'Tugas baru dibuat'}
                                 </h3>
-                                <p className="text-xs text-gray-500 mt-1">
-                                  Kamu menambahkan tugas: <strong>{item.metadata?.title || '-'}</strong> ({item.metadata?.category || 'Akademik'})
+                                <p className="text-xs text-gray-500 mt-1 font-medium">
+                                  {t('history_created_task_desc', { title: item.metadata?.title || '-' })}
                                 </p>
                               </>
                             )}
@@ -337,7 +376,7 @@ export default function HistoryPage() {
                                 <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
                                   {t('task_updated_history') || 'Tugas diperbarui'}
                                 </h3>
-                                <p className="text-xs text-gray-500 mt-1">
+                                <p className="text-xs text-gray-500 mt-1 font-medium">
                                   Kamu memperbarui tugas: <strong>{item.metadata?.title || '-'}</strong> ({item.metadata?.category || 'Akademik'})
                                 </p>
                               </>
@@ -347,7 +386,7 @@ export default function HistoryPage() {
                                 <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
                                   {t('task_moved_history') || 'Status tugas diubah'}
                                 </h3>
-                                <p className="text-xs text-gray-500 mt-1">
+                                <p className="text-xs text-gray-500 mt-1 font-medium">
                                   <strong>{item.metadata?.title || '-'}</strong> dipindahkan dari <strong>{formatStatus(item.metadata?.fromStatus)}</strong> ke <strong>{formatStatus(item.metadata?.toStatus)}</strong>
                                 </p>
                               </>
@@ -357,7 +396,7 @@ export default function HistoryPage() {
                                 <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
                                   {t('task_completed_history') || 'Tugas diselesaikan'}
                                 </h3>
-                                <p className="text-xs text-gray-500 mt-1">
+                                <p className="text-xs text-gray-500 mt-1 font-medium">
                                   Kamu menyelesaikan tugas: <strong>{item.metadata?.title || '-'}</strong>
                                 </p>
                               </>
@@ -367,7 +406,7 @@ export default function HistoryPage() {
                                 <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
                                   {t('task_deleted_history') || 'Tugas dihapus'}
                                 </h3>
-                                <p className="text-xs text-gray-500 mt-1">
+                                <p className="text-xs text-gray-500 mt-1 font-medium">
                                   Kamu menghapus tugas: <strong>{item.metadata?.title || '-'}</strong>
                                 </p>
                               </>

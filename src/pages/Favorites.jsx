@@ -34,6 +34,32 @@ const LAINNYA_SUBCATEGORIES = [
   'Warteg'
 ];
 
+const CAMPUS_CENTERS = {
+  'Universitas Gadjah Mada':                         { lat: -7.7733153,   lon: 110.3892489  },
+  'Universitas Airlangga - B':                        { lat: -7.2729075,   lon: 112.7560403  },
+  'Universitas Bina Nusantara @Anggrek':              { lat: -6.1950023,   lon: 106.7764187  },
+  'Universitas Institut Teknologi Bandung - Ganesha': { lat: -6.8950712,   lon: 107.6099105  },
+  'Universitas Brawijaya':                            { lat: -7.9508146,   lon: 112.6132311  },
+  'STMIK IKMI CIREBON':                               { lat: -6.7357684,   lon: 108.53979385 },
+  'UNIVERSITAS MULTI DATA PALEMBANG':                 { lat: -2.9737715,   lon: 104.75612    },
+  'Universitas Indonesia':                            { lat: -6.36894785,  lon: 106.83008385 },
+  'Universitas Pendidikan Indonesia Bandung':         { lat: -6.8817098,   lon: 107.5954963  },
+};
+
+function getNearestCampus(lat, lon) {
+  if (lat == null || lon == null) return 'Universitas Gadjah Mada';
+  let nearestCampus = 'Universitas Gadjah Mada';
+  let minDistance = Infinity;
+  for (const [name, center] of Object.entries(CAMPUS_CENTERS)) {
+    const d = Math.pow(center.lat - lat, 2) + Math.pow(center.lon - lon, 2);
+    if (d < minDistance) {
+      minDistance = d;
+      nearestCampus = name;
+    }
+  }
+  return nearestCampus;
+}
+
 function getFavoriteSubcategory(fav) {
   if (!fav) return '';
   return String(fav.rawCategory || fav.category || fav.broadCategory || '').trim();
@@ -129,12 +155,6 @@ export default function FavoritesPage() {
     e.stopPropagation();
     try {
       await favoritesService.removeFavorite(id);
-      
-      // Save history activity
-      await historyService.createHistory('REMOVED_FAVORITE', {
-        name: placeName,
-        placeId: id
-      });
 
       setFavorites(prev => {
         const next = prev.filter(f => f.id !== id);
@@ -464,8 +484,12 @@ export default function FavoritesPage() {
                           onClick={() => {
                             // Record open route history
                             historyService.createHistory('OPENED_MAP_ROUTE', {
-                              name: selectedFav.name,
-                              mapLink: selectedFav.mapLink
+                              placeId: selectedFav.placeId || '',
+                              placeName: selectedFav.name,
+                              category: selectedFav.category || '',
+                              campus: getNearestCampus(selectedFav.lat, selectedFav.lon || selectedFav.lng),
+                              mapLink: selectedFav.mapLink,
+                              distanceText: selectedFav.distanceText || ''
                             });
                           }}
                           className="w-full bg-[#FD6825] hover:bg-[#E85A1D] py-3.5 rounded-[16px] text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#FD6825]/25 hover:scale-[1.01] active:scale-95 transition-all"

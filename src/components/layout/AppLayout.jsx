@@ -90,18 +90,31 @@ export default function AppLayout() {
         return t('notif_searched_place');
       case 'SAVED_FAVORITE':
         return t('notif_saved_favorite');
+      case 'REMOVED_FAVORITE':
+        return t('notif_removed_favorite');
       case 'OPENED_MAP_ROUTE':
+      case 'VISITED_PLACE':
         return t('notif_opened_map_route');
       case 'ASKED_CHATBOT':
+      case 'CHATBOT_MESSAGE':
         return t('notif_asked_chatbot');
       case 'CREATED_TASK':
+      case 'TASK_CREATED':
         return t('notif_created_task');
       case 'UPDATED_TASK':
+      case 'TASK_UPDATED':
         return t('notif_updated_task');
       case 'COMPLETED_TASK':
+      case 'TASK_COMPLETED':
         return t('notif_completed_task');
+      case 'DELETED_TASK':
+      case 'TASK_DELETED':
+        return t('notif_deleted_task');
+      case 'MOVED_TASK':
+      case 'TASK_MOVED':
+        return t('notif_moved_task');
       default:
-        return action;
+        return t('history_detail_unavailable') || 'Aktivitas Baru';
     }
   };
 
