@@ -128,11 +128,11 @@ function MiniChatPreview() {
    FEATURE CARDS (large, with visual previews)
 ───────────────────────────────────────────── */
 
-function FeatureCard({ icon: Icon, color, bgColor, gradientFrom, gradientTo, badge, title, desc, preview }) {
+function FeatureCard({ icon: Icon, color, bgColor, gradientFrom, gradientTo, badge, title, desc, preview, onClick }) {
   return (
-    <div className="group relative bg-white rounded-[28px] overflow-hidden
+    <div onClick={onClick} className="group relative bg-white rounded-[28px] overflow-hidden
       shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300
-      flex flex-col">
+      flex flex-col cursor-pointer">
       {/* Gradient top accent bar */}
       <div className="h-1.5 w-full" style={{ background: `linear-gradient(90deg, ${gradientFrom}, ${gradientTo})` }}/>
       <div className="p-7 flex flex-col gap-5 flex-1">
@@ -173,8 +173,7 @@ function FeatureCard({ icon: Icon, color, bgColor, gradientFrom, gradientTo, bad
    APP PREVIEW TABS
 ───────────────────────────────────────────── */
 
-function AppPreviewSection() {
-  const [active, setActive] = useState(0);
+function AppPreviewSection({ active, setActive }) {
   const tabs = [
     {
       id: 'places',
@@ -292,6 +291,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -563,6 +563,10 @@ export default function LandingPage() {
               title="Peta Kampus"
               desc="Temukan fotokopi, makanan, minuman, ATK, dan kebutuhan lain di sekitar kampus dengan rekomendasi cerdas berbasis lokasimu."
               preview={<MiniMapPreview/>}
+              onClick={() => {
+                setActiveTab(0);
+                scrollTo('preview');
+              }}
             />
             <FeatureCard
               icon={CheckSquare}
@@ -574,6 +578,10 @@ export default function LandingPage() {
               title="Kanban Tugas"
               desc="Kelola tugas kuliah dengan sistem Kanban visual: To Do, In Progress, dan Done. Pantau progres dan deadline setiap saat."
               preview={<MiniKanbanPreview/>}
+              onClick={() => {
+                setActiveTab(1);
+                scrollTo('preview');
+              }}
             />
             <FeatureCard
               icon={MessageSquare}
@@ -585,6 +593,10 @@ export default function LandingPage() {
               title="Chatbot AI"
               desc="Dapatkan bantuan cepat untuk ide, rangkuman materi, penjelasan konsep, dan kebutuhan belajar lainnya dari asisten AI pintar."
               preview={<MiniChatPreview/>}
+              onClick={() => {
+                setActiveTab(2);
+                scrollTo('preview');
+              }}
             />
           </div>
         </div>
@@ -671,7 +683,7 @@ export default function LandingPage() {
           style={{ background: 'radial-gradient(circle, #7C3AED12 0%, transparent 70%)' }}/>
         <div className="absolute bottom-1/4 right-0 w-80 h-80 rounded-full blur-[130px] pointer-events-none"
           style={{ background: 'radial-gradient(circle, #3B82F610 0%, transparent 70%)' }}/>
-        <AppPreviewSection/>
+        <AppPreviewSection active={activeTab} setActive={setActiveTab} />
       </div>
 
       {/* ── FINAL CTA ───────────────────────────────────────────── */}
