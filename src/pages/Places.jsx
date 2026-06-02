@@ -614,9 +614,15 @@ export default function PlacesPage() {
   const campusList     = appConfig.campuses       || FALLBACK_CONFIG.campuses;
   const lainnyaCats    = appConfig.lainnyaCategories || FALLBACK_CONFIG.lainnyaCategories;
 
-  // Client-side filter on displayed places
+  // Client-side filter on displayed places (sorted by distance ascending)
+  const processedPlaces = [...places].sort((a, b) => {
+    const distA = a.distanceMeters ?? Infinity;
+    const distB = b.distanceMeters ?? Infinity;
+    return distA - distB;
+  });
+
   const filteredPlaces = filterQuery.trim()
-    ? places.filter(p => {
+    ? processedPlaces.filter(p => {
         const q = filterQuery.toLowerCase();
         return (
           p.name?.toLowerCase().includes(q) ||
@@ -625,7 +631,7 @@ export default function PlacesPage() {
           p.description?.toLowerCase().includes(q)
         );
       })
-    : places;
+    : processedPlaces;
 
   const isPlaceFavorited = (place) => {
     if (!place) return false;
@@ -959,9 +965,6 @@ export default function PlacesPage() {
                     : `Menampilkan ${filteredPlaces.length} rekomendasi terdekat · ${activeChipLabel}`}
                 </p>
               </div>
-              <button className="text-xs font-bold flex items-center gap-1.5 text-gray-700 bg-white px-4 py-2.5 rounded-xl border border-gray-200 shadow-soft whitespace-nowrap shrink-0 mt-1">
-                {t('nearest') || 'Terdekat'} <ChevronDown size={13} className="text-gray-400"/>
-              </button>
             </div>
 
             {/* Text filter ── */}
