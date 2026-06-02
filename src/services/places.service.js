@@ -117,6 +117,12 @@ export function normalizePlace(item, idx = 0, fallbackCategory = '') {
     reviews,
     lat:           parsedLat && !isNaN(parsedLat) ? parsedLat : null,
     lon:           parsedLon && !isNaN(parsedLon) ? parsedLon : null,
+    googleCategory: item.googleCategory || null,
+    trustScore: item.trustScore || null,
+    tags: item.tags || null,
+    popularityCategory: item.popularityCategory || null,
+    distanceCategory: item.distanceCategory || null,
+    recommendationScore: item.recommendationScore || null,
   };
 }
 
@@ -159,7 +165,7 @@ export const FALLBACK_CONFIG = {
     makanan:  'Makanan',
     minuman:  'Cafe',
     atk:      'Print',
-    all:      'Fotokopi',
+    all:      'Semua',
   },
   // Campus name → coordinates for demo mode
   campusCenters: {
@@ -210,23 +216,49 @@ const placesService = {
    * selected_cat must be a valid Kategori_Awal value (e.g. "Fotokopi", "Makanan", "Cafe").
    * Returns normalised place array — distanceText is NEVER "NaN m".
    */
-  getRecommendations: async ({ selected_uni, selected_cat, lat, lon, session_id }) => {
+  getRecommendations: async ({ selected_uni, selected_cat, lat, lon, session_id, actual_category }) => {
     const response = await api.post('/places/recommend', {
       selected_uni,
       selected_cat,
       lat,
       lon,
-      ...(session_id && { session_id }),
+      ...(session_id     && { session_id }),
+      ...(actual_category && { actual_category }),
     });
 
-    if (response.data && response.data.success === false && response.data.code === 'PLACE_RECOMMENDER_NOT_CONFIGURED') {
-      return response.data;
+    const resData = response.data;
+
+    // Service not configured
+    if (resData && resData.success === false && resData.code === 'PLACE_RECOMMENDER_NOT_CONFIGURED') {
+      return resData;
+    }
+    if (resData && resData.data && resData.data.success === false && resData.data.code === 'PLACE_RECOMMENDER_NOT_CONFIGURED') {
+      return resData.data;
     }
 
-    const raw  = response.data?.data || response.data;
-    const list = Array.isArray(raw) ? raw : [];
+    // Extract recommendations array from any shape the backend returns
+    let list = [];
+    if (resData) {
+      if (resData.data && Array.isArray(resData.data.recommendations)) {
+        list = resData.data.recommendations;
+      } else if (Array.isArray(resData.recommendations)) {
+        list = resData.recommendations;
+      } else if (resData.data && Array.isArray(resData.data)) {
+        list = resData.data;
+      } else if (Array.isArray(resData)) {
+        list = resData;
+      } else if (resData.data && resData.data.data && Array.isArray(resData.data.data.recommendations)) {
+        list = resData.data.data.recommendations;
+      } else if (resData.data && resData.data.data && Array.isArray(resData.data.data.results)) {
+        list = resData.data.data.results;
+      } else if (resData.data && Array.isArray(resData.data.results)) {
+        list = resData.data.results;
+      } else if (Array.isArray(resData.results)) {
+        list = resData.results;
+      }
+    }
 
-    // Client-side normalisation as a second safety net
+    // Client-side normalisation as a second safety net (never NaN distanceText)
     return list.map((item, idx) => normalizePlace(item, idx, selected_cat));
   },
 
