@@ -132,7 +132,7 @@ export default function LoginPage() {
       </div>
 
       {/* ── RIGHT PANEL (form) ── */}
-      <div className="flex-1 flex items-center justify-center bg-[#F8FAFC] p-5 sm:p-10">
+      <div className="flex-1 flex items-center justify-center bg-[#F8FAFC] p-4 sm:p-6 lg:p-10">
         <div className="w-full max-w-md">
 
           {/* Mobile logo */}
@@ -141,7 +141,7 @@ export default function LoginPage() {
           </div>
 
           {/* Card */}
-          <div className="bg-white rounded-[28px] border border-gray-100 shadow-xl shadow-gray-200/50 p-8 sm:p-10">
+          <div className="bg-white rounded-[24px] md:rounded-[28px] border border-gray-100 shadow-xl shadow-gray-200/50 p-5 sm:p-8 md:p-10">
 
             {/* Header */}
             <div className="mb-8">

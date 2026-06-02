@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { Search, Bell, MessageSquare, ChevronDown } from 'lucide-react';
+import BrandLogo from '../common/BrandLogo';
+import { Search, Bell, MessageSquare, ChevronDown, Map as MapIcon, LayoutDashboard, Heart, History } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { usePreferences } from '../../context/PreferencesContext';
 import historyService from '../../services/history.service';
@@ -11,6 +12,7 @@ export default function AppLayout() {
   const { user, logout } = useAuthStore();
   const { preferences, t, formatTime } = usePreferences();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isNotifDropdownOpen, setIsNotifDropdownOpen] = useState(false);
@@ -118,14 +120,27 @@ export default function AppLayout() {
     }
   };
 
+  const bottomNavItems = [
+    { name: t('peta'), href: '/places', icon: MapIcon },
+    { name: t('kanban'), href: '/dashboard', icon: LayoutDashboard },
+    { name: t('chatbot'), href: '/chatbot', icon: MessageSquare },
+    { name: t('favorit'), href: '/favorites', icon: Heart },
+    { name: t('riwayat'), href: '/history', icon: History },
+  ];
+
   return (
     <div className="flex h-screen w-full bg-[#F9FAFB] overflow-hidden">
       <Sidebar />
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Top Navigation Bar */}
-        <header className="h-20 shrink-0 flex items-center justify-end px-8 bg-white/80 backdrop-blur-md border-b border-gray-200 z-40">
+        <header className="h-20 shrink-0 flex items-center justify-between lg:justify-end px-4 lg:px-8 bg-white/80 backdrop-blur-md border-b border-gray-200 z-40">
+          
+          {/* Mobile/Tablet Left Logo */}
+          <div className="lg:hidden flex items-center gap-2.5">
+            <BrandLogo variant="full" size="xs" dark={false} />
+          </div>
 
-          <div className="flex items-center gap-7">
+          <div className="flex items-center gap-4 lg:gap-7">
             {/* Bell Notifications */}
             <div className="flex items-center gap-4" ref={notifDropdownRef}>
               <div className="relative">
@@ -142,7 +157,7 @@ export default function AppLayout() {
                 </button>
 
                 {isNotifDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-[24px] shadow-medium border border-gray-100 py-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="absolute right-[-12px] sm:right-0 mt-2 w-[calc(100vw-32px)] sm:w-80 bg-white rounded-[24px] shadow-medium border border-gray-100 py-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="px-5 pb-3 border-b border-gray-50 flex items-center justify-between">
                       <span className="text-sm font-bold text-gray-900">{t('notifications')}</span>
                       {preferences.appNotifications && recentActivities.length > 0 && (
@@ -215,7 +230,7 @@ export default function AppLayout() {
             <div className="relative" ref={userDropdownRef}>
               <div 
                 onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                className="flex items-center gap-3.5 cursor-pointer group hover:bg-gray-50 p-1.5 pr-3 rounded-2xl transition-all"
+                className="flex items-center gap-2 sm:gap-3.5 cursor-pointer group hover:bg-gray-50 p-1.5 sm:pr-3 rounded-2xl transition-all"
               >
                 <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm ring-1 ring-gray-100 bg-[#FD6825] text-white flex items-center justify-center font-black text-sm shrink-0">
                   {user?.avatarUrl ? (
@@ -224,7 +239,7 @@ export default function AppLayout() {
                     getInitials(user?.name)
                   )}
                 </div>
-                <div className="flex flex-col">
+                <div className="hidden sm:flex flex-col">
                   <span className="text-xs font-bold text-gray-900">{user?.name || 'User'}</span>
                   <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{t('mahasiswa')}</span>
                 </div>
@@ -294,9 +309,39 @@ export default function AppLayout() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-6 md:p-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-24 lg:pb-8">
           <Outlet />
         </main>
+
+        {/* Bottom navigation for mobile/tablet */}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-gray-200 flex items-center justify-around px-2 z-40 shadow-lg pb-safe">
+          {bottomNavItems.map((item) => {
+            const isActive = location.pathname === item.href;
+            return (
+              <button
+                key={item.name}
+                onClick={() => navigate(item.href)}
+                className="flex-1 flex flex-col items-center justify-center py-2 text-gray-500 hover:text-gray-900 transition-all cursor-pointer"
+              >
+                <item.icon
+                  size={20}
+                  className={cn(
+                    "transition-colors",
+                    isActive ? "text-[#FD6825] scale-110" : "text-gray-400"
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-[9px] mt-1 transition-all",
+                    isActive ? "text-[#FD6825] font-extrabold" : "text-gray-400 font-bold"
+                  )}
+                >
+                  {item.name}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
       </div>
     </div>
   );

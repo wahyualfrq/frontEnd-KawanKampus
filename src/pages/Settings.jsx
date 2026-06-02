@@ -255,7 +255,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto animate-in fade-in duration-500 p-6">
+    <div className="max-w-[1200px] mx-auto animate-in fade-in duration-500">
       
       {/* Title */}
       <div className="mb-6 flex justify-between items-start gap-4 flex-wrap">
@@ -263,7 +263,6 @@ export default function SettingsPage() {
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">{t('settings')}</h1>
           <p className="text-sm text-gray-400 font-medium mt-1">{t('settings_desc')}</p>
         </div>
-        {loading && <Loader2 className="animate-spin text-[#FD6825] mt-2" size={24}/>}
       </div>
 
       {/* Messages */}
@@ -278,11 +277,37 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {/* Top Menu Tabs for Mobile/Tablet */}
+      <div className="lg:hidden flex items-center gap-2 overflow-x-auto scrollbar-hide pb-3.5 mb-2 w-full">
+        {MENU.map((item) => {
+          const isActive = activeMenu === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveMenu(item.id);
+                setErrorMsg('');
+                setSuccessMsg('');
+              }}
+              className={cn(
+                'flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border shadow-soft shrink-0 cursor-pointer',
+                isActive 
+                  ? 'bg-gray-900 text-white border-transparent' 
+                  : 'bg-white text-gray-600 border-gray-100 hover:border-gray-200'
+              )}
+            >
+              <item.icon size={13}/>
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Main Container */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-7">
 
         {/* ── Left menu sidebar ── */}
-        <div className="lg:col-span-3">
+        <div className="hidden lg:block lg:col-span-3">
           <div className="bg-white rounded-[20px] border border-gray-100 shadow-soft overflow-hidden">
             {MENU.map((item) => {
               const isActive = activeMenu === item.id;

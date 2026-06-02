@@ -95,7 +95,7 @@ function MapPlaceholder({ places, selectedUni, zoom, setZoom, centerCoords, panO
   };
 
   return (
-    <div className="relative w-full rounded-[30px] overflow-hidden shadow-medium border-4 border-white bg-[#FAF8F5]" style={{ height: 420 }}>
+    <div className="relative w-full rounded-[30px] overflow-hidden shadow-medium border-4 border-white bg-[#FAF8F5] h-[280px] sm:h-[360px] lg:h-[420px]">
       {/* Map Viewport wrapper */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Scaled/zoomed/panned content container */}
@@ -1010,8 +1010,8 @@ export default function PlacesPage() {
             </div>
           </div>
 
-          {/* Right: detail */}
-          <div className="lg:col-span-5 sticky top-28 h-fit">
+          {/* Right: detail (Desktop) */}
+          <div className="hidden lg:block lg:col-span-5 sticky top-28 h-fit">
             <AnimatePresence mode="wait">
               {selectedPlace && (
                 <PlaceDetail
@@ -1026,6 +1026,43 @@ export default function PlacesPage() {
               )}
             </AnimatePresence>
           </div>
+
+          {/* Mobile/Tablet Bottom Sheet Overlay */}
+          <AnimatePresence>
+            {selectedPlace && (
+              <div className="lg:hidden fixed inset-0 z-50 flex items-end justify-center bg-black/45 backdrop-blur-sm">
+                <div className="absolute inset-0" onClick={() => setSelectedPlace(null)} />
+                <motion.div
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "100%" }}
+                  transition={{ type: "spring", damping: 25, stiffness: 250 }}
+                  className="relative w-full max-w-lg bg-white rounded-t-[32px] overflow-hidden shadow-2xl z-10 max-h-[85vh] flex flex-col"
+                >
+                  <div className="w-full flex justify-center py-3 shrink-0">
+                    <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
+                  </div>
+                  <button
+                    onClick={() => setSelectedPlace(null)}
+                    className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm border border-gray-150 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-all shadow-sm"
+                  >
+                    <X size={16} />
+                  </button>
+                  <div className="overflow-y-auto flex-1 pb-8">
+                    <PlaceDetail
+                      place={selectedPlace}
+                      isFavorited={isPlaceFavorited(selectedPlace)}
+                      onToggleFavorite={() => handleToggleFavorite(selectedPlace)}
+                      getMapsUrl={getMapsUrl}
+                      handleOpenRoute={handleOpenRoute}
+                      selectedUni={selectedUni}
+                    />
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
+
         </div>
       )}
     </div>

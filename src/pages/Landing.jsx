@@ -475,7 +475,7 @@ export default function LandingPage() {
           </div>
 
           {/* ── Visual column ── */}
-          <div className="relative hidden lg:block">
+          <div className="relative block mt-12 lg:mt-0 w-full max-w-lg mx-auto lg:max-w-none">
             {/* Floating glow behind cards */}
             <div className="absolute -inset-10 bg-[#FD6825]/8 rounded-full blur-[60px] pointer-events-none"/>
 
@@ -495,7 +495,7 @@ export default function LandingPage() {
             </div>
 
             {/* Floating stat chips */}
-            <div className="absolute -top-3 -right-4 bg-white rounded-2xl px-4 py-2.5 shadow-xl border border-gray-100 flex items-center gap-2.5 z-20">
+            <div className="hidden sm:flex absolute -top-3 -right-4 bg-white rounded-2xl px-4 py-2.5 shadow-xl border border-gray-100 items-center gap-2.5 z-20 animate-in zoom-in duration-300">
               <div className="w-8 h-8 rounded-xl bg-[#FFF1E9] flex items-center justify-center">
                 <Zap size={15} className="text-[#FD6825]"/>
               </div>
@@ -505,7 +505,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="absolute -bottom-3 -left-4 bg-white rounded-2xl px-4 py-2.5 shadow-xl border border-gray-100 flex items-center gap-2.5 z-20">
+            <div className="hidden sm:flex absolute -bottom-3 -left-4 bg-white rounded-2xl px-4 py-2.5 shadow-xl border border-gray-100 items-center gap-2.5 z-20 animate-in zoom-in duration-300">
               <div className="w-8 h-8 rounded-xl bg-[#EDE9FE] flex items-center justify-center">
                 <BookOpen size={15} className="text-[#7C3AED]"/>
               </div>

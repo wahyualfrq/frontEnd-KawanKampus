@@ -42,6 +42,7 @@ export default function KanbanBoard() {
   const [isFormOpen,      setIsFormOpen]      = useState(false);
   const [initialStatus,   setInitialStatus]   = useState('TODO');
   const [editTask,        setEditTask]        = useState(null);
+  const [activeTab,       setActiveTab]       = useState('TODO');
 
   // Filters
   const [searchQuery,     setSearchQuery]     = useState('');
@@ -461,6 +462,39 @@ export default function KanbanBoard() {
         <TaskSummary tasks={tasks} filteredCount={hasActiveFilter ? filteredTasks.length : null} />
       </div>
 
+      {/* Column selector tabs for mobile/tablet */}
+      <div className="lg:hidden flex border border-gray-150 p-1.5 rounded-2xl bg-white shadow-soft mb-6">
+        {COLUMNS.map((col) => {
+          const isActive = activeTab === col.id;
+          const count = (groupedFiltered[col.id] || []).length;
+          const title = col.id === 'TODO' 
+            ? (t('todo') || 'To Do') 
+            : col.id === 'IN_PROGRESS' 
+              ? (t('in_progress') || 'In Progress') 
+              : (t('done') || 'Done');
+          return (
+            <button
+              key={col.id}
+              onClick={() => setActiveTab(col.id)}
+              className={cn(
+                "flex-1 py-3 text-center rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                isActive 
+                  ? "bg-[#FFF1E9] text-[#FD6825] shadow-sm"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+              )}
+            >
+              <span>{title}</span>
+              <span className={cn(
+                "px-2 py-0.5 rounded-full text-[10px] font-black",
+                isActive ? "bg-[#FD6825]/15 text-[#FD6825]" : "bg-gray-100 text-gray-400"
+              )}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* ── Kanban Board ── */}
       <DndContext
         sensors={sensors}
@@ -469,18 +503,22 @@ export default function KanbanBoard() {
         onDragEnd={handleDragEnd}
       >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 pb-8">
-          {COLUMNS.map((col) => (
-            <KanbanColumn
-              key={col.id}
-              id={col.id}
-              title={col.id === 'TODO' ? (t('todo') || 'To Do') : col.id === 'IN_PROGRESS' ? (t('in_progress') || 'In Progress') : (t('done') || 'Done')}
-              tasks={groupedFiltered[col.id] || []}
-              onAddTask={openForm}
-              onDeleteTask={handleDeleteTask}
-              onEditTask={handleEditTask}
-              onStatusChange={handleStatusChange}
-            />
-          ))}
+          {COLUMNS.map((col) => {
+            const isVisible = activeTab === col.id;
+            return (
+              <div key={col.id} className={cn("w-full flex flex-col h-full", !isVisible && "hidden lg:flex")}>
+                <KanbanColumn
+                  id={col.id}
+                  title={col.id === 'TODO' ? (t('todo') || 'To Do') : col.id === 'IN_PROGRESS' ? (t('in_progress') || 'In Progress') : (t('done') || 'Done')}
+                  tasks={groupedFiltered[col.id] || []}
+                  onAddTask={openForm}
+                  onDeleteTask={handleDeleteTask}
+                  onEditTask={handleEditTask}
+                  onStatusChange={handleStatusChange}
+                />
+              </div>
+            );
+          })}
         </div>
 
         <DragOverlay>

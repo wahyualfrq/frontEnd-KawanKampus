@@ -26,7 +26,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="flex h-full w-[260px] flex-col sidebar-bg text-white">
+    <div className="hidden lg:flex h-full w-[260px] flex-col sidebar-bg text-white shrink-0">
       <div className="flex h-20 shrink-0 items-center px-6">
         <BrandLogo variant="full" size="sm" dark={true} />
       </div>

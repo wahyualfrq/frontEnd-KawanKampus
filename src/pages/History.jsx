@@ -196,7 +196,7 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-[1000px] mx-auto pb-10 animate-in fade-in duration-500 p-6">
+    <div className="space-y-6 max-w-[1000px] mx-auto pb-10 animate-in fade-in duration-500">
       
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
