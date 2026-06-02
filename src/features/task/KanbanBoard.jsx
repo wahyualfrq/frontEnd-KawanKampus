@@ -19,7 +19,6 @@ import TaskSummary from './TaskSummary';
 import { Plus, Filter, ChevronDown, Search, X, SlidersHorizontal } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { usePreferences } from '../../context/PreferencesContext';
-import historyService from '../../services/history.service';
 import { cn } from '../../utils/cn';
 
 const COLUMNS = [
@@ -99,7 +98,6 @@ export default function KanbanBoard() {
     onSuccess: (newTask) => {
       addTask(newTask);
       queryClient.invalidateQueries(['tasks']);
-      try { historyService.createHistory('CREATED_TASK', { taskId: newTask.id, title: newTask.title }); } catch {}
     },
   });
 
@@ -114,12 +112,6 @@ export default function KanbanBoard() {
         updateTask(variables.id, variables.data);
       }
       queryClient.invalidateQueries(['tasks']);
-      try {
-        const isCompleted = variables.data.status === 'DONE';
-        const action = isCompleted ? 'COMPLETED_TASK' : 'UPDATED_TASK';
-        const task = tasks.find((t) => t.id === variables.id);
-        historyService.createHistory(action, { taskId: variables.id, title: task?.title || '' });
-      } catch {}
     },
   });
 

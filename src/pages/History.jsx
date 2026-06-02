@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import {
   Clock, Search, Navigation, Bookmark, Bot, Trash2,
-  AlertCircle, Loader2, Calendar, ShieldAlert, ArrowRight, ExternalLink
+  AlertCircle, Loader2, Calendar, ShieldAlert, ArrowRight, ExternalLink,
+  Plus, Pencil, CheckCircle2, ChevronRight, LayoutList
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../utils/cn';
@@ -9,25 +10,54 @@ import historyService from '../services/history.service';
 import { usePreferences } from '../context/PreferencesContext';
 
 const TABS = [
-  { id: 'all',      label: 'Semua Activities' },
-  { id: 'searched', label: 'Pencarian',      Icon: Search },
-  { id: 'visited',  label: 'Rute Peta',      Icon: Navigation },
-  { id: 'saved',    label: 'Disimpan',       Icon: Bookmark },
-  { id: 'chatbot',  label: 'Chatbot AI',     Icon: Bot },
+  { id: 'all',      labelKey: 'history_all_activities', defaultLabel: 'Semua Aktivitas', Icon: Clock },
+  { id: 'searched', labelKey: 'history_searched',       defaultLabel: 'Pencarian',      Icon: Search },
+  { id: 'visited',  labelKey: 'history_visited',        defaultLabel: 'Dikunjungi',     Icon: Navigation },
+  { id: 'saved',    labelKey: 'history_saved',          defaultLabel: 'Disimpan',       Icon: Bookmark },
+  { id: 'chatbot',  labelKey: 'history_chatbot',        defaultLabel: 'Chatbot AI',     Icon: Bot },
+  { id: 'kanban',   labelKey: 'history_kanban',         defaultLabel: 'Kanban / Tugas', Icon: LayoutList },
 ];
 
-function getActionStyle(action) {
+const formatStatus = (status) => {
+  if (!status) return '-';
+  const s = String(status).toUpperCase();
+  if (s === 'TODO') return 'To Do';
+  if (s === 'IN_PROGRESS') return 'In Progress';
+  if (s === 'DONE') return 'Done';
+  return status;
+};
+
+function getActionStyle(action, t) {
+  const defaultStyle = { label: t('history_detail_unavailable') || 'Aktivitas', color: 'text-gray-500 bg-gray-50 border-gray-100', Icon: Clock };
+  if (!action) return defaultStyle;
+
   switch (action) {
     case 'SEARCHED_PLACE':
-      return { label: 'Pencarian', color: 'text-blue-600 bg-blue-50 border-blue-100', Icon: Search };
+      return { label: t('history_searched') || 'Pencarian', color: 'text-blue-600 bg-blue-50 border-blue-100', Icon: Search };
     case 'OPENED_MAP_ROUTE':
-      return { label: 'Buka Peta', color: 'text-[#FD6825] bg-orange-50 border-orange-100', Icon: Navigation };
+      return { label: t('history_visited') || 'Dikunjungi', color: 'text-[#FD6825] bg-orange-50 border-orange-100', Icon: Navigation };
     case 'SAVED_FAVORITE':
-      return { label: 'Disimpan', color: 'text-yellow-600 bg-yellow-50 border-yellow-100', Icon: Bookmark };
+      return { label: t('history_saved') || 'Disimpan', color: 'text-yellow-600 bg-yellow-50 border-yellow-100', Icon: Bookmark };
     case 'ASKED_CHATBOT':
-      return { label: 'Tanya AI', color: 'text-purple-600 bg-purple-50 border-purple-100', Icon: Bot };
+    case 'CHATBOT_MESSAGE':
+      return { label: t('history_chatbot') || 'Chatbot AI', color: 'text-purple-600 bg-purple-50 border-purple-100', Icon: Bot };
+    case 'CREATED_TASK':
+    case 'TASK_CREATED':
+      return { label: t('history_kanban') || 'Kanban', color: 'text-blue-600 bg-blue-50 border-blue-100', Icon: Plus };
+    case 'UPDATED_TASK':
+    case 'TASK_UPDATED':
+      return { label: t('history_kanban') || 'Kanban', color: 'text-amber-600 bg-amber-50 border-amber-100', Icon: Pencil };
+    case 'MOVED_TASK':
+    case 'TASK_MOVED':
+      return { label: t('history_kanban') || 'Kanban', color: 'text-indigo-600 bg-indigo-50 border-indigo-100', Icon: ChevronRight };
+    case 'COMPLETED_TASK':
+    case 'TASK_COMPLETED':
+      return { label: t('history_kanban') || 'Kanban', color: 'text-emerald-600 bg-emerald-50 border-emerald-100', Icon: CheckCircle2 };
+    case 'DELETED_TASK':
+    case 'TASK_DELETED':
+      return { label: t('history_kanban') || 'Kanban', color: 'text-red-600 bg-red-50 border-red-100', Icon: Trash2 };
     default:
-      return { label: 'Aktivitas', color: 'text-gray-500 bg-gray-50 border-gray-100', Icon: Clock };
+      return defaultStyle;
   }
 }
 
@@ -65,7 +95,7 @@ export default function HistoryPage() {
   };
 
   const handleClearHistory = async () => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus seluruh riwayat aktivitas Anda?')) return;
+    if (!window.confirm(t('confirm_clear_history') || 'Apakah Anda yakin ingin menghapus seluruh riwayat aktivitas Anda?')) return;
     try {
       await historyService.clearHistories();
       setHistories([]);
@@ -80,7 +110,17 @@ export default function HistoryPage() {
     if (activeTab === 'searched') return item.action === 'SEARCHED_PLACE';
     if (activeTab === 'visited') return item.action === 'OPENED_MAP_ROUTE';
     if (activeTab === 'saved') return item.action === 'SAVED_FAVORITE';
-    if (activeTab === 'chatbot') return item.action === 'ASKED_CHATBOT';
+    if (activeTab === 'chatbot') return item.action === 'ASKED_CHATBOT' || item.action === 'CHATBOT_MESSAGE';
+    if (activeTab === 'kanban') {
+      const kanbanActions = [
+        'CREATED_TASK', 'TASK_CREATED',
+        'UPDATED_TASK', 'TASK_UPDATED',
+        'MOVED_TASK', 'TASK_MOVED',
+        'COMPLETED_TASK', 'TASK_COMPLETED',
+        'DELETED_TASK', 'TASK_DELETED'
+      ];
+      return kanbanActions.includes(item.action);
+    }
     return true;
   });
 
@@ -142,7 +182,7 @@ export default function HistoryPage() {
             className="flex items-center gap-2 px-4.5 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl text-xs font-bold transition-all border border-red-100/50 shadow-soft"
           >
             <Trash2 size={13}/>
-            <span>{t('clear_all_history')}</span>
+            <span>{t('clear_history') || t('clear_all_history') || 'Hapus Riwayat'}</span>
           </button>
         )}
       </div>
@@ -167,7 +207,7 @@ export default function HistoryPage() {
               )}
             >
               {tab.Icon && <tab.Icon size={13}/>}
-              <span>{tab.id === 'all' ? t('all_activities') : tab.id === 'searched' ? t('searched') : tab.id === 'visited' ? t('visited') : tab.id === 'saved' ? t('saved') : tab.id === 'chatbot' ? t('chatbot') : tab.label}</span>
+              <span>{t(tab.labelKey) || tab.defaultLabel}</span>
             </button>
           );
         })}
@@ -188,13 +228,20 @@ export default function HistoryPage() {
           <div className="text-center space-y-1 px-6">
             <h2 className="font-bold text-gray-900 text-base">{t('no_history')}</h2>
             <p className="text-xs text-gray-400 font-medium leading-relaxed">
-              {t('no_history_desc')}
+              {t('no_history_desc') || 'Aktivitas pencarian, favorit, chatbot, dan tugas akan muncul di sini.'}
             </p>
           </div>
         </div>
       ) : filteredHistories.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-[24px] border border-gray-100 text-gray-400 font-bold text-sm">
-          {t('no_history_category') || 'Tidak ada riwayat untuk kategori filter ini.'}
+        <div className="flex flex-col items-center justify-center py-16 bg-white rounded-[24px] border border-gray-100 text-gray-400 max-w-md mx-auto space-y-4 shadow-soft">
+          <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center border border-dashed border-gray-200">
+            {activeTab === 'kanban' ? <LayoutList className="w-6 h-6 text-gray-300" /> : <Clock className="w-6 h-6 text-gray-300" />}
+          </div>
+          <p className="text-sm font-bold text-gray-900 text-center px-6">
+            {activeTab === 'kanban'
+              ? (t('no_task_history') || 'Tugas belum memiliki riwayat aktivitas.')
+              : (t('no_history_category') || 'Tidak ada riwayat untuk kategori filter ini.')}
+          </p>
         </div>
       ) : (
         <div className="space-y-7">
@@ -217,7 +264,7 @@ export default function HistoryPage() {
                 <div className="bg-white border border-gray-100 rounded-[24px] p-2 space-y-1 shadow-soft">
                   <AnimatePresence>
                     {list.map((item, idx) => {
-                      const style = getActionStyle(item.action);
+                      const style = getActionStyle(item.action, t);
                       return (
                         <motion.div
                           key={item.id}
@@ -240,29 +287,105 @@ export default function HistoryPage() {
                           {/* Content */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">{style.label === 'Pencarian' ? t('searched') : style.label === 'Buka Peta' ? t('visited') : style.label === 'Disimpan' ? t('saved') : style.label === 'Tanya AI' ? t('chatbot') : style.label}</span>
+                              <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">
+                                {style.label}
+                              </span>
                               <span className="text-[10px] text-gray-300">•</span>
                               <span className="text-[10px] font-extrabold text-gray-400">{formatTime(item.createdAt)}</span>
                             </div>
 
                             {/* Main Title/Activity Summary */}
-                            <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
-                              {item.action === 'SEARCHED_PLACE' && (
-                                <>Mencari rekomendasi tempat <strong>{item.metadata?.category || 'Umum'}</strong> di sekitar <strong>{item.metadata?.campus || 'Kampus'}</strong></>
-                              )}
-                              {item.action === 'OPENED_MAP_ROUTE' && (
-                                <>Membuka rute jalan ke <strong>{item.metadata?.name}</strong> di Google Maps</>
-                              )}
-                              {item.action === 'SAVED_FAVORITE' && (
-                                <>Menyimpan tempat <strong>{item.metadata?.name}</strong> ({item.metadata?.category}) ke Favorit</>
-                              )}
-                              {item.action === 'ASKED_CHATBOT' && (
-                                <>Tanya AI: <em className="text-gray-500 font-medium">"{item.metadata?.message}"</em></>
-                              )}
-                              {item.action === 'REMOVED_FAVORITE' && (
-                                <>Menghapus tempat <strong>{item.metadata?.name}</strong> dari daftar Favorit</>
-                              )}
-                            </h3>
+                            {item.action === 'SEARCHED_PLACE' && (
+                              <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                Mencari rekomendasi tempat <strong>{item.metadata?.category || 'Umum'}</strong> di sekitar <strong>{item.metadata?.campus || 'Kampus'}</strong>
+                              </h3>
+                            )}
+                            {item.action === 'OPENED_MAP_ROUTE' && (
+                              <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                Membuka rute jalan ke <strong>{item.metadata?.name}</strong> di Google Maps
+                              </h3>
+                            )}
+                            {item.action === 'SAVED_FAVORITE' && (
+                              <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                Menyimpan tempat <strong>{item.metadata?.name}</strong> ({item.metadata?.category}) ke Favorit
+                              </h3>
+                            )}
+                            {(item.action === 'ASKED_CHATBOT' || item.action === 'CHATBOT_MESSAGE') && (
+                              <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                Tanya AI: <em className="text-gray-500 font-medium">"{item.metadata?.message}"</em>
+                              </h3>
+                            )}
+                            {item.action === 'REMOVED_FAVORITE' && (
+                              <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                Menghapus tempat <strong>{item.metadata?.name}</strong> dari daftar Favorit
+                              </h3>
+                            )}
+
+                            {/* Kanban Tasks Titles & Descriptions */}
+                            {['CREATED_TASK', 'TASK_CREATED'].includes(item.action) && (
+                              <>
+                                <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                  {t('task_created_history') || 'Tugas baru dibuat'}
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Kamu menambahkan tugas: <strong>{item.metadata?.title || '-'}</strong> ({item.metadata?.category || 'Akademik'})
+                                </p>
+                              </>
+                            )}
+                            {['UPDATED_TASK', 'TASK_UPDATED'].includes(item.action) && (
+                              <>
+                                <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                  {t('task_updated_history') || 'Tugas diperbarui'}
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Kamu memperbarui tugas: <strong>{item.metadata?.title || '-'}</strong> ({item.metadata?.category || 'Akademik'})
+                                </p>
+                              </>
+                            )}
+                            {['MOVED_TASK', 'TASK_MOVED'].includes(item.action) && (
+                              <>
+                                <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                  {t('task_moved_history') || 'Status tugas diubah'}
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  <strong>{item.metadata?.title || '-'}</strong> dipindahkan dari <strong>{formatStatus(item.metadata?.fromStatus)}</strong> ke <strong>{formatStatus(item.metadata?.toStatus)}</strong>
+                                </p>
+                              </>
+                            )}
+                            {['COMPLETED_TASK', 'TASK_COMPLETED'].includes(item.action) && (
+                              <>
+                                <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                  {t('task_completed_history') || 'Tugas diselesaikan'}
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Kamu menyelesaikan tugas: <strong>{item.metadata?.title || '-'}</strong>
+                                </p>
+                              </>
+                            )}
+                            {['DELETED_TASK', 'TASK_DELETED'].includes(item.action) && (
+                              <>
+                                <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                  {t('task_deleted_history') || 'Tugas dihapus'}
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Kamu menghapus tugas: <strong>{item.metadata?.title || '-'}</strong>
+                                </p>
+                              </>
+                            )}
+
+                            {/* Fallback for unrecognized action type */}
+                            {!['SEARCHED_PLACE', 'OPENED_MAP_ROUTE', 'SAVED_FAVORITE', 'ASKED_CHATBOT', 'CHATBOT_MESSAGE', 'REMOVED_FAVORITE',
+                              'CREATED_TASK', 'TASK_CREATED', 'UPDATED_TASK', 'TASK_UPDATED', 'MOVED_TASK', 'TASK_MOVED', 'COMPLETED_TASK', 'TASK_COMPLETED', 'DELETED_TASK', 'TASK_DELETED'
+                            ].includes(item.action) && (
+                              <>
+                                <h3 className="font-bold text-gray-800 text-[14px] leading-snug mt-0.5">
+                                  {style.label}
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {item.metadata?.message || t('history_detail_unavailable') || 'Detail aktivitas tidak tersedia.'}
+                                </p>
+                              </>
+                            )}
 
                             {/* Actionable link fallback */}
                             {item.metadata?.mapLink && (
