@@ -9,6 +9,7 @@ import { getChatbotPlaceRecommendation } from '../services/chatbot.service';
 import { cn } from '../utils/cn';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePreferences } from '../context/PreferencesContext';
+import MarkdownMessage from '../components/chat/MarkdownMessage';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -454,12 +455,12 @@ export default function ChatbotPage() {
 
                         {/* Main text bubble */}
                         <div className={cn(
-                          'px-4 py-3.5 rounded-[18px] rounded-bl-sm shadow-soft border text-sm font-medium leading-relaxed whitespace-pre-wrap',
+                          'px-4 py-3.5 rounded-[18px] rounded-bl-sm shadow-soft border text-sm font-medium leading-relaxed',
                           msg.isError
-                            ? 'bg-red-50 border-red-100 text-red-700'
+                            ? 'bg-red-50 border-red-100 text-red-700 whitespace-pre-wrap'
                             : 'bg-white border-gray-100 text-gray-800'
                         )}>
-                          {msg.text}
+                          {msg.isError ? msg.text : <MarkdownMessage content={msg.text} />}
                         </div>
 
                         {/* Campus choice buttons */}
@@ -607,10 +608,10 @@ export default function ChatbotPage() {
                   <div className={cn(
                     'px-5 py-4 rounded-[20px] text-sm font-medium leading-relaxed shadow-soft border',
                     msg.sender === 'user'
-                      ? 'bg-[#FD6825] text-white border-[#FD6825] rounded-br-sm'
-                      : 'bg-white border-gray-100 text-gray-800 rounded-bl-sm whitespace-pre-wrap'
+                      ? 'bg-[#FD6825] text-white border-[#FD6825] rounded-br-sm whitespace-pre-wrap'
+                      : 'bg-white border-gray-100 text-gray-800 rounded-bl-sm'
                   )}>
-                    {msg.text}
+                    {msg.sender === 'user' ? msg.text : <MarkdownMessage content={msg.text} />}
                   </div>
                 </div>
               </motion.div>
