@@ -42,28 +42,30 @@ export default function TaskSummary({ tasks = [], filteredCount = null }) {
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mr-1">
-        {t('ringkasan_tugas') || 'Ringkasan'}
-      </span>
-
-      {stats.map((stat) => (
-        <div
-          key={stat.label}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-gray-100 shadow-sm"
-        >
-          <div className={cn('w-5 h-5 rounded-full flex items-center justify-center shrink-0', stat.bgColor)}>
-            <stat.icon size={10} className={stat.color} />
+    <div className="w-full flex flex-col gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
+        {stats.map((stat) => (
+          <div
+            key={stat.label}
+            className="flex items-center gap-3.5 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200"
+          >
+            <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm', stat.bgColor)}>
+              <stat.icon size={18} className={stat.color} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-lg md:text-xl font-black text-gray-900 leading-none mb-1">{stat.value}</span>
+              <span className="text-xs font-semibold text-gray-500">{stat.label}</span>
+            </div>
           </div>
-          <span className="text-xs font-black text-gray-900">{stat.value}</span>
-          <span className="text-[10px] font-medium text-gray-500 hidden sm:block">{stat.label}</span>
-        </div>
-      ))}
+        ))}
+      </div>
 
       {filteredCount !== null && filteredCount !== taskArray.length && (
-        <span className="text-[10px] font-bold text-[#FD6825] bg-[#FFF1E9] border border-[#FD6825]/20 px-2.5 py-1 rounded-full">
-          Menampilkan {filteredCount} hasil filter
-        </span>
+        <div className="flex items-center">
+          <span className="text-xs font-bold text-[#FD6825] bg-[#FFF1E9] border border-[#FD6825]/20 px-3 py-1 rounded-full">
+            Menampilkan {filteredCount} dari {taskArray.length} tugas hasil filter
+          </span>
+        </div>
       )}
     </div>
   );

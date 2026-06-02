@@ -39,23 +39,23 @@ export default function KanbanColumn({ id, title, tasks, onAddTask, onDeleteTask
   const cfg = COLUMN_CONFIG[id] || COLUMN_CONFIG.TODO;
 
   return (
-    <div className="flex flex-col w-full md:min-w-[320px] md:max-w-[380px] flex-1">
+    <div className="flex flex-col w-full h-full">
 
       {/* Column Header */}
-      <div className="flex items-center justify-between mb-3 px-1">
+      <div className="flex items-center justify-between mb-4 px-1.5">
         <div className="flex items-center gap-2.5">
-          <div className={cn('w-2.5 h-2.5 rounded-full shrink-0', cfg.dot)} />
-          <h3 className="text-sm font-black text-gray-900 tracking-tight">{title}</h3>
-          <span className={cn('text-[10px] font-black px-2 py-0.5 rounded-full', cfg.badge)}>
+          <div className={cn('w-3 h-3 rounded-full shrink-0', cfg.dot)} />
+          <h3 className="text-sm md:text-base font-black text-gray-900 tracking-tight">{title}</h3>
+          <span className={cn('text-[10px] md:text-xs font-black px-2.5 py-0.5 rounded-full', cfg.badge)}>
             {tasks.length}
           </span>
         </div>
         <button
           onClick={() => onAddTask(id)}
-          className="p-1.5 text-gray-400 hover:text-[#FD6825] hover:bg-[#FFF1E9] rounded-xl transition-all"
+          className="p-2 text-gray-400 hover:text-[#FD6825] hover:bg-[#FFF1E9] rounded-xl transition-all shrink-0"
           title="Tambah tugas"
         >
-          <Plus size={15} />
+          <Plus size={16} />
         </button>
       </div>
 
@@ -63,51 +63,55 @@ export default function KanbanColumn({ id, title, tasks, onAddTask, onDeleteTask
       <div
         ref={setNodeRef}
         className={cn(
-          'flex-1 flex flex-col gap-3 p-3 rounded-[20px] transition-all border-2 border-transparent min-h-[200px]',
+          'flex-1 flex flex-col gap-4 p-4.5 rounded-[24px] transition-all border-2 border-transparent min-h-[460px] md:min-h-[560px] justify-between',
           cfg.bg,
           isOver && `ring-2 ${cfg.ring} ring-offset-2 border-dashed border-current`
         )}
       >
-        <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-          <div className="flex flex-col gap-3">
-            {tasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                onDelete={onDeleteTask}
-                onEdit={onEditTask}
-                onStatusChange={onStatusChange}
-              />
-            ))}
-          </div>
-        </SortableContext>
-
-        {/* Empty state */}
-        {tasks.length === 0 && !isOver && (
-          <div className="flex flex-col items-center justify-center py-10 gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-white/70 flex items-center justify-center text-xl shadow-sm border border-white">
-              {cfg.emptyIcon}
+        <div className="flex-1 flex flex-col gap-4">
+          <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+            <div className="flex flex-col gap-4">
+              {tasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onDelete={onDeleteTask}
+                  onEdit={onEditTask}
+                  onStatusChange={onStatusChange}
+                />
+              ))}
             </div>
-            <p className="text-[11px] font-bold text-gray-400 text-center leading-relaxed">
-              {cfg.emptyText}
-            </p>
-            {id === 'TODO' && (
-              <button
-                onClick={() => onAddTask(id)}
-                className="text-[10px] font-black text-[#FD6825] hover:underline"
-              >
-                + Tambah tugas pertama
-              </button>
-            )}
-          </div>
-        )}
+          </SortableContext>
+
+          {/* Empty state */}
+          {tasks.length === 0 && !isOver && (
+            <div className="flex-1 flex flex-col items-center justify-center py-12 gap-3.5">
+              <div className="w-14 h-14 rounded-2xl bg-white/90 flex items-center justify-center text-2xl shadow-sm border border-white/50">
+                {cfg.emptyIcon}
+              </div>
+              <div className="flex flex-col items-center gap-1.5 px-4 text-center">
+                <p className="text-xs md:text-sm font-black text-gray-500">
+                  {cfg.emptyText}
+                </p>
+                {id === 'TODO' && (
+                  <button
+                    onClick={() => onAddTask(id)}
+                    className="text-xs font-black text-[#FD6825] hover:underline transition-all mt-1"
+                  >
+                    + Tambah tugas pertama
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Bottom add button */}
         <button
           onClick={() => onAddTask(id)}
-          className="group flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-gray-200/80 text-gray-400 hover:text-[#FD6825] hover:border-[#FD6825]/40 hover:bg-white/60 transition-all text-[11px] font-bold mt-1"
+          className="group flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-gray-200/80 text-gray-500 hover:text-[#FD6825] hover:border-[#FD6825]/40 hover:bg-white/90 transition-all text-xs font-bold mt-3 shrink-0"
         >
-          <Plus size={13} className="group-hover:scale-110 transition-transform" />
+          <Plus size={14} className="group-hover:scale-110 transition-transform" />
           {t('tambah_tugas') || 'Tambah Tugas'}
         </button>
       </div>

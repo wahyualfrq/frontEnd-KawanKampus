@@ -271,32 +271,32 @@ export default function KanbanBoard() {
   }
 
   return (
-    <div className="flex flex-col animate-in fade-in duration-500">
+    <div className="w-full flex flex-col space-y-6 md:space-y-8 animate-in fade-in duration-500">
 
       {/* ── Header ── */}
-      <div className="mb-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+      <div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-6">
           <div>
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight">{t('kanban_tugas') || 'Kanban Tugas'}</h1>
-            <p className="text-sm text-gray-500 font-medium mt-0.5">{t('kelola_pantau') || 'Kelola dan pantau semua tugasmu'}</p>
+            <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">{t('kanban_tugas') || 'Kanban Tugas'}</h1>
+            <p className="text-sm md:text-base text-gray-500 font-medium mt-1">{t('kelola_pantau') || 'Kelola dan pantau semua tugasmu'}</p>
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center flex-wrap gap-3">
 
             {/* Filter button */}
             <div className="relative" ref={filterRef}>
               <button
                 onClick={() => setFilterOpen(o => !o)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2.5 border rounded-xl text-xs font-bold shadow-sm hover:bg-gray-50 transition-all',
+                  'flex items-center gap-2 px-4.5 py-3 border rounded-2xl text-xs md:text-sm font-bold shadow-sm hover:bg-gray-50 transition-all',
                   isFilterActive
                     ? 'bg-[#FD6825] text-white border-[#FD6825] shadow-[#FD6825]/25'
                     : 'bg-white border-gray-200 text-gray-700'
                 )}
               >
-                <SlidersHorizontal size={14} />
+                <SlidersHorizontal size={15} />
                 {t('filter') || 'Filter'}
                 {isFilterActive && (
-                  <span className="ml-1 bg-white/30 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                  <span className="ml-1 bg-white/30 text-white text-[9px] md:text-[10px] font-black px-2 py-0.5 rounded-full">
                     aktif
                   </span>
                 )}
@@ -307,7 +307,7 @@ export default function KanbanBoard() {
                 <motion.div
                   initial={{ opacity: 0, y: -8, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  className="absolute right-0 top-full mt-2 bg-white rounded-[20px] shadow-xl border border-gray-100 p-5 z-50 w-72"
+                  className="absolute right-0 top-full mt-2 bg-white rounded-[24px] shadow-xl border border-gray-100 p-6 z-50 w-80"
                 >
                   <p className="text-xs font-black text-gray-700 uppercase tracking-widest mb-4">Filter Tugas</p>
 
@@ -385,21 +385,21 @@ export default function KanbanBoard() {
               <button
                 onClick={() => setCatDropOpen(o => !o)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2.5 border rounded-xl text-xs font-bold shadow-sm hover:bg-gray-50 transition-all',
+                  'flex items-center gap-2 px-4.5 py-3 border rounded-2xl text-xs md:text-sm font-bold shadow-sm hover:bg-gray-50 transition-all',
                   activeCategory !== 'Semua'
                     ? 'bg-[#1C1C1E] text-white border-[#1C1C1E]'
                     : 'bg-white border-gray-200 text-gray-700'
                 )}
               >
                 {activeCategory === 'Semua' ? (t('semua_kategori') || 'Semua Kategori') : activeCategory}
-                <ChevronDown size={13} className={cn('transition-transform', catDropOpen && 'rotate-180')} />
+                <ChevronDown size={14} className={cn('transition-transform', catDropOpen && 'rotate-180')} />
               </button>
 
               {catDropOpen && (
                 <motion.div
                   initial={{ opacity: 0, y: -6, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  className="absolute right-0 top-full mt-2 bg-white rounded-[16px] shadow-xl border border-gray-100 py-1.5 z-50 min-w-[180px]"
+                  className="absolute right-0 top-full mt-2 bg-white rounded-[16px] shadow-xl border border-gray-100 py-1.5 z-50 min-w-[190px]"
                 >
                   {CATEGORIES.map((cat) => (
                     <button key={cat} onClick={() => { setActiveCategory(cat); setCatDropOpen(false); }}
@@ -419,7 +419,7 @@ export default function KanbanBoard() {
             {/* Add task */}
             <button
               onClick={() => openForm()}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#FD6825] hover:bg-[#E85A1D] text-white rounded-xl text-xs font-bold shadow-md shadow-[#FD6825]/25 transition-all hover:scale-105 active:scale-95"
+              className="flex items-center gap-2 px-5 py-3 bg-[#FD6825] hover:bg-[#E85A1D] text-white rounded-2xl text-xs md:text-sm font-bold shadow-md shadow-[#FD6825]/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               <Plus size={16} />
               {t('tambah_tugas') || 'Tambah Tugas'}
@@ -427,44 +427,46 @@ export default function KanbanBoard() {
           </div>
         </div>
 
-        {/* Search bar */}
-        <div className="relative max-w-sm">
-          <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari tugas berdasarkan judul atau kategori..."
-            className="w-full pl-10 pr-9 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-medium text-gray-900 placeholder:text-gray-400 outline-none focus:ring-4 focus:ring-[#FD6825]/8 focus:border-[#FD6825] transition-all shadow-sm"
-          />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
-              <X size={14} />
-            </button>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Search bar */}
+          <div className="relative max-w-md w-full">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari tugas berdasarkan judul atau kategori..."
+              className="w-full pl-11 pr-10 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-medium text-gray-900 placeholder:text-gray-400 outline-none focus:ring-4 focus:ring-[#FD6825]/8 focus:border-[#FD6825] transition-all shadow-sm"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                <X size={16} />
+              </button>
+            )}
+          </div>
+
+          {/* Active filter indicator */}
+          {hasActiveFilter && (
+            <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm">
+              <span className="font-bold text-[#FD6825] uppercase tracking-wider">Filter aktif</span>
+              <span className="text-gray-500 font-medium">
+                — Menampilkan {filteredTasks.length} dari {tasks.length} tugas
+              </span>
+              <button
+                onClick={() => { resetFilter(); setActiveCategory('Semua'); setSearchQuery(''); }}
+                className="font-bold text-gray-400 hover:text-[#FD6825] transition-colors underline ml-1"
+              >
+                Reset semua
+              </button>
+            </div>
           )}
         </div>
+      </div>
 
-        {/* Active filter indicator */}
-        {hasActiveFilter && (
-          <div className="flex items-center gap-2 mt-3">
-            <span className="text-[10px] font-bold text-[#FD6825] uppercase tracking-wider">Filter aktif</span>
-            <span className="text-[10px] text-gray-500 font-medium">
-              — Menampilkan {filteredTasks.length} dari {tasks.length} tugas
-            </span>
-            <button
-              onClick={() => { resetFilter(); setActiveCategory('Semua'); setSearchQuery(''); }}
-              className="text-[10px] font-bold text-gray-400 hover:text-gray-600 underline ml-1"
-            >
-              Reset semua
-            </button>
-          </div>
-        )}
-
-        {/* Summary */}
-        <div className="mt-4">
-          <TaskSummary tasks={tasks} filteredCount={hasActiveFilter ? filteredTasks.length : null} />
-        </div>
+      {/* Summary */}
+      <div className="w-full">
+        <TaskSummary tasks={tasks} filteredCount={hasActiveFilter ? filteredTasks.length : null} />
       </div>
 
       {/* ── Kanban Board ── */}
@@ -474,7 +476,7 @@ export default function KanbanBoard() {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex flex-col md:flex-row gap-5 overflow-x-auto pb-8 scrollbar-hide">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 pb-8">
           {COLUMNS.map((col) => (
             <KanbanColumn
               key={col.id}
