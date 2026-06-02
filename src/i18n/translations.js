@@ -136,6 +136,10 @@ export const translations = {
     no_favorites: 'Belum ada tempat favorit',
     no_favorites_desc: 'Simpan tempat dari halaman Peta agar muncul di sini.',
     search_places: 'Cari Tempat',
+    no_favorites_category: 'Tidak ada favorit di kategori ini.',
+    select_place_details: 'Pilih lokasi untuk melihat detail.',
+    filter_placeholder: 'Cari favorit berdasarkan nama atau kategori...',
+    favorites_other_categories: 'Lainnya',
 
     // History Page
     history_title: 'Riwayat',
@@ -343,6 +347,10 @@ export const translations = {
     no_favorites: 'No favorite places yet',
     no_favorites_desc: 'Save places from the Map page so they appear here.',
     search_places: 'Find Places',
+    no_favorites_category: 'No favorites in this category.',
+    select_place_details: 'Select a place to view details.',
+    filter_placeholder: 'Search favorites by name or category...',
+    favorites_other_categories: 'Others',
 
     // History Page
     history_title: 'History',
