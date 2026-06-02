@@ -1,17 +1,53 @@
+import { useState, useRef, useEffect } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { 
-  Calendar, 
-  Trash2, 
+import {
+  Calendar,
+  Trash2,
   GripVertical,
   CheckCircle2,
-  Clock
+  Clock,
+  Pencil,
+  MoreVertical,
+  ChevronRight,
+  AlertCircle,
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { usePreferences } from '../../context/PreferencesContext';
 
-export default function TaskCard({ task, isOverlay, onDelete }) {
-  const { t, preferences } = usePreferences();
+// ── Static config maps ────────────────────────────────────────────────────────
+const CATEGORY_CONFIG = {
+  'Akademik':          { bg: 'bg-blue-50',    text: 'text-blue-700'   },
+  'Proyek':            { bg: 'bg-violet-50',  text: 'text-violet-700' },
+  'Organisasi':        { bg: 'bg-amber-50',   text: 'text-amber-700'  },
+  'Pengembangan Diri': { bg: 'bg-teal-50',    text: 'text-teal-700'   },
+  'Lainnya':           { bg: 'bg-gray-100',   text: 'text-gray-600'   },
+};
+
+const PRIORITY_CONFIG = {
+  Low:    { dot: 'bg-emerald-400', text: 'text-emerald-600' },
+  Medium: { dot: 'bg-amber-400',   text: 'text-amber-600'   },
+  High:   { dot: 'bg-red-400',     text: 'text-red-600'     },
+};
+
+const STATUS_MOVES = {
+  TODO:        ['IN_PROGRESS', 'DONE'],
+  IN_PROGRESS: ['TODO', 'DONE'],
+  DONE:        ['TODO', 'IN_PROGRESS'],
+};
+
+const STATUS_LABELS = {
+  TODO:        'To Do',
+  IN_PROGRESS: 'In Progress',
+  DONE:        'Done',
+};
+
+// ── TaskCard component ────────────────────────────────────────────────────────
+export default function TaskCard({ task, isOverlay, onDelete, onEdit, onStatusChange }) {
+  const { preferences } = usePreferences();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
 
   const style = {
@@ -19,108 +55,178 @@ export default function TaskCard({ task, isOverlay, onDelete }) {
     transition,
   };
 
-  const statusConfig = {
-    TODO: { color: 'text-orange-500', bg: 'bg-[#FFF1E9]', icon: Clock },
-    IN_PROGRESS: { color: 'text-purple-600', bg: 'bg-[#F3F0FF]', icon: Clock },
-    DONE: { color: 'text-emerald-600', bg: 'bg-[#ECFDF5]', icon: CheckCircle2 },
-  };
+  // Close menu on outside click / Escape
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+    };
+    const handleKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, []);
 
-  const config = statusConfig[task.status] || statusConfig.TODO;
+  const catCfg  = CATEGORY_CONFIG[task.category] || CATEGORY_CONFIG['Lainnya'];
+  const priCfg  = PRIORITY_CONFIG[task.priority]  || PRIORITY_CONFIG.Medium;
 
   const formatDate = (dateString) => {
-    if (!dateString) return preferences.language === 'en' ? 'May 25, 2024' : '25 Mei 2024';
+    if (!dateString) return null;
     try {
-      const locale = preferences.language === 'en' ? 'en-US' : 'id-ID';
+      const locale = preferences?.language === 'en' ? 'en-US' : 'id-ID';
       return new Date(dateString).toLocaleDateString(locale, {
-        day: '2-digit',
+        day:   '2-digit',
         month: 'short',
-        year: 'numeric'
+        year:  'numeric',
       });
-    } catch (e) {
-      return preferences.language === 'en' ? 'May 25, 2024' : '25 Mei 2024';
+    } catch {
+      return null;
     }
   };
+
+  // Due date overdue check
+  const isOverdue = (() => {
+    if (!task.dueDate || task.status === 'DONE') return false;
+    return new Date(task.dueDate) < new Date();
+  })();
+
+  const dueDateLabel = formatDate(task.dueDate);
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group relative bg-white p-4 rounded-[16px] border border-gray-100 shadow-sm transition-all duration-200",
-        isDragging && "opacity-50",
-        isOverlay && "rotate-2 scale-105 shadow-xl border-primary z-50 cursor-grabbing",
-        !isOverlay && "cursor-grab hover:border-primary/20 hover:shadow-md hover:-translate-y-1"
+        'group relative bg-white p-5 md:p-6 rounded-[20px] border border-gray-100 shadow-sm transition-all duration-200 select-none',
+        isDragging  && 'opacity-40 scale-95',
+        isOverlay   && 'rotate-1 scale-[1.03] shadow-xl border-[#FD6825]/30 z-50 cursor-grabbing',
+        !isOverlay  && 'cursor-grab hover:border-[#FD6825]/20 hover:shadow-md hover:-translate-y-0.5',
+        task.status === 'DONE' && 'opacity-85',
       )}
       {...attributes}
       {...listeners}
     >
-      <div className="space-y-3">
-        {/* Category Badge */}
-        <div className="flex items-center justify-between">
+      <div className="space-y-4">
+
+        {/* Top row: category badge + menu */}
+        <div className="flex items-center justify-between gap-2.5">
           <span className={cn(
-            "text-[9px] font-bold px-2 py-0.5 rounded-lg uppercase tracking-wider",
-            config.bg,
-            config.color
+            'text-[10px] font-black px-2.5 py-1 rounded-xl uppercase tracking-wider shrink-0',
+            catCfg.bg, catCfg.text
           )}>
-            {task.category === 'Akademik' ? t('academic') : (task.category || t('academic'))}
+            {task.category || 'Akademik'}
           </span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(task.id);
-            }}
-            className="text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-1"
-          >
-            <Trash2 size={12} />
-          </button>
-        </div>
 
-        {/* Title */}
-        <h4 className="text-sm font-bold text-gray-900 leading-snug">
-          {task.title}
-        </h4>
-
-        {/* Progress (Optional) */}
-        {task.status === 'IN_PROGRESS' && (
-           <div className="space-y-1.5">
-              <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase">
-                  <span>{t('progress')}</span>
-                  <span>{task.progress || 60}%</span>
-              </div>
-              <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                 <div 
-                  className="h-full bg-ai-purple rounded-full" 
-                  style={{ width: `${task.progress || 60}%` }}
-                 ></div>
-              </div>
-           </div>
-        )}
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-3 mt-1 border-t border-gray-50">
-          <div className="flex items-center gap-1.5 text-gray-400">
-            <Calendar size={12} />
-            <span className="text-[10px] font-bold">
-              {formatDate(task.createdAt)}
-            </span>
-          </div>
-          <div className="flex items-center -space-x-1.5">
-            <img 
-              className="w-5 h-5 rounded-full border-2 border-white shadow-sm" 
-              src={`https://ui-avatars.com/api/?name=${task.assignee || 'User'}&background=random&color=fff&size=128`} 
-              alt="Avatar" 
-            />
-            {task.status === 'DONE' && (
-              <div className="w-5 h-5 rounded-full border-2 border-white bg-emerald-500 flex items-center justify-center text-white shadow-sm">
-                <CheckCircle2 size={10} />
+          {/* Priority dot */}
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+            {task.priority && (
+              <div className="flex items-center gap-1.5">
+                <div className={cn('w-2 h-2 rounded-full shrink-0', priCfg.dot)} />
+                <span className={cn('text-[10px] font-black uppercase tracking-wider', priCfg.text)}>{task.priority}</span>
               </div>
             )}
           </div>
+
+          {/* Context menu — stop drag propagation */}
+          {!isOverlay && (
+            <div ref={menuRef} className="relative shrink-0">
+              <button
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); setMenuOpen(o => !o); }}
+                className="p-1.5 text-gray-300 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-gray-50"
+              >
+                <MoreVertical size={13} />
+              </button>
+
+              {menuOpen && (
+                <div
+                  className="absolute right-0 top-full mt-1.5 bg-white rounded-2xl shadow-lg border border-gray-100 py-1.5 z-50 min-w-[170px]"
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  {/* Edit */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onEdit(task); }}
+                    className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Pencil size={12} className="text-[#7C3AED]" /> Edit
+                  </button>
+
+                  {/* Move status */}
+                  {STATUS_MOVES[task.status]?.map((s) => (
+                    <button
+                      key={s}
+                      onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onStatusChange(task.id, s); }}
+                      className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <ChevronRight size={12} className="text-[#FD6825]" />
+                      Pindah ke {STATUS_LABELS[s]}
+                    </button>
+                  ))}
+
+                  <div className="h-px bg-gray-100 my-1" />
+
+                  {/* Delete */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDelete(task.id); }}
+                    className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 size={12} /> Hapus
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Title */}
+        <h4 className={cn(
+          'text-sm md:text-base font-black text-gray-900 leading-snug',
+          task.status === 'DONE' && 'line-through text-gray-400 font-bold'
+        )}>
+          {task.title}
+        </h4>
+
+        {/* Description (truncated) */}
+        {task.description && (
+          <p className="text-xs md:text-sm text-gray-500 font-medium leading-relaxed line-clamp-3">
+            {task.description}
+          </p>
+        )}
+
+        {/* Footer: date + done badge */}
+        <div className="flex items-center justify-between pt-3.5 border-t border-gray-50 gap-2">
+          <div className="flex items-center gap-1.5">
+            {isOverdue ? (
+              <div className="flex items-center gap-1 text-red-500">
+                <AlertCircle size={11} />
+                <span className="text-[10px] md:text-xs font-bold">{dueDateLabel}</span>
+              </div>
+            ) : dueDateLabel ? (
+              <div className="flex items-center gap-1 text-gray-400">
+                <Calendar size={11} />
+                <span className="text-[10px] md:text-xs font-bold">{dueDateLabel}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 text-gray-300">
+                <Clock size={11} />
+                <span className="text-[10px] md:text-xs font-medium">{formatDate(task.createdAt)}</span>
+              </div>
+            )}
+          </div>
+
+          {task.status === 'DONE' && (
+            <div className="w-5.5 h-5.5 rounded-full bg-emerald-500 flex items-center justify-center shadow-sm shrink-0">
+              <CheckCircle2 size={11} color="white" />
+            </div>
+          )}
         </div>
       </div>
-      
-      {/* Drag Handle indicator */}
-      <div className="absolute top-2 right-2 text-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
-        <GripVertical size={14} />
+
+      {/* Drag handle indicator */}
+      <div className="absolute top-2 right-2 text-gray-100 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        <GripVertical size={13} />
       </div>
     </div>
   );

@@ -332,7 +332,7 @@ function PlaceCard({ place, isSelected, isFavorited, onToggleFavorite, onClick }
 }
 
 // ── Detail panel ──────────────────────────────────────────────────────────────
-function PlaceDetail({ place, isFavorited, onToggleFavorite }) {
+function PlaceDetail({ place, isFavorited, onToggleFavorite, getMapsUrl, handleOpenRoute, selectedUni }) {
   const chip = getChip(place.category);
   const { t, formatDistance } = usePreferences();
   return (
@@ -445,66 +445,92 @@ function PlaceDetail({ place, isFavorited, onToggleFavorite }) {
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-3 border-t border-b border-gray-50 py-3.5">
-          <button
-            onClick={() => {
-              if (place.mapLink) {
-                historyService.createHistory('OPENED_MAP_ROUTE', {
-                  name: place.name,
-                  mapLink: place.mapLink
-                });
-                window.open(place.mapLink, '_blank');
-              }
-            }}
-            className="flex flex-col items-center gap-1.5 group"
-          >
-            <div className="w-11 h-11 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#FD6825]/10 group-hover:text-[#FD6825] transition-all"><Navigation size={18}/></div>
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('route')}</span>
-          </button>
-          
-          <button onClick={onToggleFavorite} className="flex flex-col items-center gap-1.5 group">
-            <div className={cn(
-              'w-11 h-11 rounded-2xl flex items-center justify-center transition-all',
-              isFavorited ? 'bg-[#FFF8EC] text-[#FD6825]' : 'bg-gray-50 text-gray-400 group-hover:bg-[#FD6825]/10 group-hover:text-[#FD6825]'
-            )}>
-              <Bookmark size={18} fill={isFavorited ? '#FD6825' : 'none'}/>
-            </div>
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('save')}</span>
-          </button>
+        {(() => {
+          const routeUrl = getMapsUrl ? getMapsUrl(place) : null;
+          return (
+            <>
+              <div className="grid grid-cols-3 gap-3 border-t border-b border-gray-50 py-3.5">
+                <button
+                  onClick={() => handleOpenRoute && handleOpenRoute(place)}
+                  disabled={!routeUrl}
+                  title={!routeUrl ? "Link rute tidak tersedia." : ""}
+                  className={cn(
+                    "flex flex-col items-center gap-1.5 group transition-all",
+                    !routeUrl ? "opacity-40 cursor-not-allowed" : "cursor-pointer"
+                  )}
+                >
+                  <div className={cn(
+                    "w-11 h-11 rounded-2xl flex items-center justify-center transition-all",
+                    !routeUrl 
+                      ? "bg-gray-100 text-gray-300" 
+                      : "bg-gray-50 text-gray-400 group-hover:bg-[#FD6825]/10 group-hover:text-[#FD6825]"
+                  )}>
+                    <Navigation size={18}/>
+                  </div>
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('route')}</span>
+                </button>
+                
+                <button onClick={onToggleFavorite} className="flex flex-col items-center gap-1.5 group">
+                  <div className={cn(
+                    'w-11 h-11 rounded-2xl flex items-center justify-center transition-all',
+                    isFavorited ? 'bg-[#FFF8EC] text-[#FD6825]' : 'bg-gray-50 text-gray-400 group-hover:bg-[#FD6825]/10 group-hover:text-[#FD6825]'
+                  )}>
+                    <Bookmark size={18} fill={isFavorited ? '#FD6825' : 'none'}/>
+                  </div>
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('save')}</span>
+                </button>
 
-          <button
-            onClick={() => {
-              if (navigator.share) {
-                navigator.share({ title: place.name, url: place.mapLink });
-              } else {
-                navigator.clipboard.writeText(place.mapLink);
-                alert('Link disalin ke clipboard!');
-              }
-            }}
-            className="flex flex-col items-center gap-1.5 group"
-          >
-            <div className="w-11 h-11 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#FD6825]/10 group-hover:text-[#FD6825] transition-all"><Share2 size={18}/></div>
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('share')}</span>
-          </button>
-        </div>
-        
-        {place.mapLink ? (
-          <a href={place.mapLink} target="_blank" rel="noopener noreferrer"
-            onClick={() => {
-              historyService.createHistory('OPENED_MAP_ROUTE', {
-                name: place.name,
-                mapLink: place.mapLink
-              });
-            }}
-            className="w-full bg-[#FD6825] hover:bg-[#E85A1D] py-4 rounded-[16px] text-white font-bold flex items-center justify-center gap-3 shadow-lg shadow-[#FD6825]/25 hover:scale-[1.02] active:scale-95 transition-all">
-            <ExternalLink size={18}/>
-            {t('open_in_google_maps')}
-          </a>
-        ) : (
-          <button disabled className="w-full bg-gray-100 py-4 rounded-[16px] text-gray-400 font-bold flex items-center justify-center gap-2 cursor-not-allowed">
-            <Navigation size={18}/> {t('not_available')}
-          </button>
-        )}
+                <button
+                  onClick={() => {
+                    if (!routeUrl) return;
+                    if (navigator.share) {
+                      navigator.share({ title: place.name, text: place.name, url: routeUrl })
+                        .catch(() => {});
+                    } else {
+                      navigator.clipboard.writeText(routeUrl);
+                      alert('Link berhasil disalin!');
+                    }
+                  }}
+                  disabled={!routeUrl}
+                  title={!routeUrl ? "Link rute tidak tersedia." : ""}
+                  className={cn(
+                    "flex flex-col items-center gap-1.5 group transition-all",
+                    !routeUrl ? "opacity-40 cursor-not-allowed" : "cursor-pointer"
+                  )}
+                >
+                  <div className={cn(
+                    "w-11 h-11 rounded-2xl flex items-center justify-center transition-all",
+                    !routeUrl 
+                      ? "bg-gray-100 text-gray-300" 
+                      : "bg-gray-50 text-gray-400 group-hover:bg-[#FD6825]/10 group-hover:text-[#FD6825]"
+                  )}>
+                    <Share2 size={18}/>
+                  </div>
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('share')}</span>
+                </button>
+              </div>
+              
+              {!routeUrl && (
+                <p className="text-[10px] text-center text-red-500 font-bold bg-red-50/50 py-2.5 rounded-2xl border border-red-100/30">
+                  ⚠️ Link rute tidak tersedia.
+                </p>
+              )}
+
+              {routeUrl ? (
+                <button
+                  onClick={() => handleOpenRoute && handleOpenRoute(place)}
+                  className="w-full bg-[#FD6825] hover:bg-[#E85A1D] py-4 rounded-[16px] text-white font-bold flex items-center justify-center gap-3 shadow-lg shadow-[#FD6825]/25 hover:scale-[1.02] active:scale-95 transition-all">
+                  <ExternalLink size={18}/>
+                  {t('open_in_google_maps')}
+                </button>
+              ) : (
+                <button disabled className="w-full bg-gray-100 py-4 rounded-[16px] text-gray-400 font-bold flex items-center justify-center gap-2 cursor-not-allowed">
+                  <Navigation size={18}/> {t('not_available')}
+                </button>
+              )}
+            </>
+          );
+        })()}
       </div>
     </motion.div>
   );
@@ -609,6 +635,39 @@ export default function PlacesPage() {
     );
   };
 
+  const getMapsUrl = (place) => {
+    if (!place) return null;
+    if (place.mapLink) return place.mapLink;
+    if (place.lat != null && place.lon != null && !isNaN(place.lat) && !isNaN(place.lon)) {
+      return `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lon}`;
+    }
+    if (place.name) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}`;
+    }
+    return null;
+  };
+
+  const handleOpenRoute = (place) => {
+    if (!place) return;
+    const url = getMapsUrl(place);
+    if (!url) return;
+
+    try {
+      historyService.createHistory('OPENED_MAP_ROUTE', {
+        placeId: place.id || '',
+        placeName: place.name || '',
+        category: place.rawCategory || place.category || '',
+        campus: selectedUni || '',
+        mapLink: url,
+        distanceText: place.distanceText || ''
+      });
+    } catch (e) {
+      console.warn('[Places] Failed to record OPENED_MAP_ROUTE:', e.message);
+    }
+
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   const handleToggleFavorite = async (place) => {
     if (!place) return;
     const favorited = isPlaceFavorited(place);
@@ -623,7 +682,7 @@ export default function PlacesPage() {
           setFavorites(prev => prev.filter(f => f.id !== match.id));
         }
       } else {
-        const newFav = await favoritesService.addFavorite(place);
+        const newFav = await favoritesService.addFavorite({ ...place, campus: selectedUni });
         setFavorites(prev => [...prev, newFav]);
       }
     } catch (err) {
@@ -960,6 +1019,9 @@ export default function PlacesPage() {
                   place={selectedPlace}
                   isFavorited={isPlaceFavorited(selectedPlace)}
                   onToggleFavorite={() => handleToggleFavorite(selectedPlace)}
+                  getMapsUrl={getMapsUrl}
+                  handleOpenRoute={handleOpenRoute}
+                  selectedUni={selectedUni}
                 />
               )}
             </AnimatePresence>
