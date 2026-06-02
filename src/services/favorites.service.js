@@ -11,10 +11,14 @@ const favoritesService = {
     const payload = {
       name: place.name,
       category: place.category,
+      rawCategory: place.rawCategory || place.category,
       address: place.address || '',
       lat: place.lat || 0.0,
       lng: place.lon || place.lng || 0.0,
-      mapLink: place.mapLink || ''
+      mapLink: place.mapLink || '',
+      rating: place.rating !== undefined ? place.rating : null,
+      reviews: place.reviews !== undefined ? place.reviews : null,
+      distanceText: place.distanceText || ''
     };
 
     const response = await api.post('/favorites', payload);

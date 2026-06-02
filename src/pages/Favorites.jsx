@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   MapPin, Star, Bookmark, Share2, Trash2, Navigation,
-  ExternalLink, Loader2, Grid, Printer, Book, Utensils, Coffee, AlertCircle
+  ExternalLink, Loader2, Grid, Printer, Book, Utensils, Coffee, AlertCircle,
+  ChevronDown, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../utils/cn';
@@ -19,12 +20,52 @@ const CHIP_DEFS = [
   { id: 'lainnya',  label: 'Lainnya',  Icon: Grid,     chipBg: '#64748B', chipText: '#fff',    pinColor: '#64748B' },
 ];
 
-function getChip(category) {
-  const lower = String(category || '').toLowerCase();
-  if (lower.includes('fotokopi') || lower.includes('copy')) return CHIP_DEFS[1];
-  if (lower.includes('atk') || lower.includes('print')) return CHIP_DEFS[2];
-  if (lower.includes('makan') || lower.includes('restoran') || lower.includes('food') || lower.includes('warteg') || lower.includes('pizza')) return CHIP_DEFS[3];
-  if (lower.includes('minum') || lower.includes('kopi') || lower.includes('cafe') || lower.includes('kafe')) return CHIP_DEFS[4];
+const LAINNYA_SUBCATEGORIES = [
+  'Apotek',
+  'Kedai',
+  'Kedai Kopi',
+  'Minimarket',
+  'Perhentian Bus',
+  'Pizza',
+  'Restoran',
+  'Restoran Padang',
+  'Tempat Fitness',
+  'Toko Es Krim',
+  'Warteg'
+];
+
+function getFavoriteSubcategory(fav) {
+  if (!fav) return '';
+  return String(fav.rawCategory || fav.category || fav.broadCategory || '').trim();
+}
+
+function getChip(categoryOrFav) {
+  let category = '';
+  if (categoryOrFav && typeof categoryOrFav === 'object') {
+    category = categoryOrFav.rawCategory || categoryOrFav.category || categoryOrFav.broadCategory || '';
+  } else {
+    category = String(categoryOrFav || '');
+  }
+
+  const lower = category.toLowerCase().trim();
+
+  // 1. Fotokopi tab: Fotokopi, Fotocopy, Photocopy, Copy, Print
+  const isFotokopi = ['fotokopi', 'fotocopy', 'photocopy', 'copy', 'print'].some(term => lower.includes(term));
+  if (isFotokopi) return CHIP_DEFS[1];
+
+  // 2. ATK tab: ATK, Alat Tulis, Stationery
+  const isATK = ['atk', 'alat tulis', 'stationery'].some(term => lower.includes(term));
+  if (isATK) return CHIP_DEFS[2];
+
+  // 3. Makanan tab: Makanan, Restoran, Restaurant, Warteg, Pizza, Food, Makanan Siap Saji, Restoran Padang
+  const isMakanan = ['makanan', 'restoran', 'restaurant', 'warteg', 'pizza', 'food', 'makanan siap saji', 'restoran padang'].some(term => lower.includes(term));
+  if (isMakanan) return CHIP_DEFS[3];
+
+  // 4. Minuman tab: Minuman, Cafe, Kafe, Kedai, Kedai Kopi, Kopi, Coffee, Toko Es Krim, Eskrim
+  const isMinuman = ['minuman', 'cafe', 'kafe', 'kedai', 'kedai kopi', 'kopi', 'coffee', 'toko es krim', 'eskrim'].some(term => lower.includes(term));
+  if (isMinuman) return CHIP_DEFS[4];
+
+  // 5. Lainnya tab: anything else
   return CHIP_DEFS[5];
 }
 
@@ -36,6 +77,9 @@ export default function FavoritesPage() {
   const [error, setError] = useState('');
   const [selectedFav, setSelectedFav] = useState(null);
   const [activeChip, setActiveChip] = useState('all');
+  const [activeLainnya, setActiveLainnya] = useState(null);
+  const [lainnyaOpen, setLainnyaOpen] = useState(false);
+  const lainnyaRef = useRef(null);
 
   const fetchFavorites = async () => {
     try {
@@ -57,6 +101,28 @@ export default function FavoritesPage() {
 
   useEffect(() => {
     fetchFavorites();
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (lainnyaRef.current && !lainnyaRef.current.contains(e.target)) {
+        setLainnyaOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // Close dropdown on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setLainnyaOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const handleRemoveFavorite = async (e, id, placeName) => {
@@ -85,8 +151,21 @@ export default function FavoritesPage() {
   // Filter logic
   const filteredFavorites = favorites.filter(fav => {
     if (activeChip === 'all') return true;
-    const chip = getChip(fav.category);
-    return chip.id === activeChip;
+
+    if (activeChip === 'lainnya') {
+      if (activeLainnya) {
+        // Filter strictly by the selected subcategory from the dropdown
+        const sub = getFavoriteSubcategory(fav).toLowerCase();
+        return sub === activeLainnya.toLowerCase();
+      } else {
+        // Return favorites in the general "Lainnya" category (not matching main categories)
+        const groupId = getChip(fav).id;
+        return groupId === 'lainnya';
+      }
+    }
+
+    const groupId = getChip(fav).id;
+    return groupId === activeChip;
   });
 
   return (
@@ -132,29 +211,116 @@ export default function FavoritesPage() {
       ) : (
         <>
           {/* Category Chips */}
-          <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-hide pb-1">
-            {CHIP_DEFS.map(chip => {
-              const count = favorites.filter(f => activeChip === 'all' || getChip(f.category).id === chip.id).length;
-              const isActive = activeChip === chip.id;
-              return (
-                <button
-                  key={chip.id}
-                  onClick={() => {
-                    setActiveChip(chip.id);
-                    const filtered = favorites.filter(f => chip.id === 'all' || getChip(f.category).id === chip.id);
-                    setSelectedFav(filtered.length > 0 ? filtered[0] : null);
-                  }}
-                  className={cn(
-                    'flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border shadow-soft',
-                    isActive ? 'border-transparent text-white' : 'bg-white text-gray-700 border-gray-100 hover:border-gray-200'
-                  )}
-                  style={isActive ? { background: chip.chipBg, color: chip.chipText } : {}}
-                >
-                  <chip.Icon size={14}/>
-                  {chip.id === 'all' ? t('all_categories') : chip.id === 'fotokopi' ? t('photocopy') : chip.id === 'atk' ? t('atk') : chip.id === 'makanan' ? t('food') : chip.id === 'minuman' ? t('drink') : chip.id === 'lainnya' ? t('others') : chip.label}
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-hide pb-1 flex-1 min-w-0">
+              {CHIP_DEFS.slice(0, 5).map(chip => {
+                const isActive = activeChip === chip.id && !activeLainnya;
+                return (
+                  <button
+                    key={chip.id}
+                    onClick={() => {
+                      setActiveChip(chip.id);
+                      setActiveLainnya(null);
+                      setLainnyaOpen(false);
+                      const filtered = favorites.filter(f => chip.id === 'all' || getChip(f).id === chip.id);
+                      setSelectedFav(filtered.length > 0 ? filtered[0] : null);
+                    }}
+                    className={cn(
+                      'flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border shadow-soft',
+                      isActive ? 'border-transparent text-white' : 'bg-white text-gray-700 border-gray-100 hover:border-gray-200'
+                    )}
+                    style={isActive ? { background: chip.chipBg, color: chip.chipText } : {}}
+                  >
+                    <chip.Icon size={14}/>
+                    {chip.id === 'all' ? t('all_categories') : chip.id === 'fotokopi' ? t('photocopy') : chip.id === 'atk' ? t('atk') : chip.id === 'makanan' ? t('food') : chip.id === 'minuman' ? t('drink') : chip.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Lainnya Dropdown */}
+            <div className="relative shrink-0" ref={lainnyaRef}>
+              <button
+                onClick={() => setLainnyaOpen(o => !o)}
+                className={cn(
+                  'flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border shadow-soft',
+                  activeChip === 'lainnya'
+                    ? 'border-transparent text-white'
+                    : 'bg-white text-gray-700 border-gray-100 hover:border-gray-200'
+                )}
+                style={activeChip === 'lainnya' ? { background: '#64748B', color: '#fff' } : {}}
+              >
+                {activeLainnya ? (
+                  <>
+                    <Grid size={14}/>
+                    <span className="max-w-[100px] truncate">{activeLainnya}</span>
+                    <X size={13} className="hover:text-red-200 transition-colors" onClick={e => {
+                      e.stopPropagation();
+                      setActiveLainnya(null);
+                      setActiveChip('lainnya');
+                      const filtered = favorites.filter(f => getChip(f).id === 'lainnya');
+                      setSelectedFav(filtered.length > 0 ? filtered[0] : null);
+                    }}/>
+                  </>
+                ) : (
+                  <>
+                    <Grid size={14}/>
+                    <span>{t('favorites_other_categories') || t('others') || 'Lainnya'}</span>
+                    <ChevronDown size={13} className={cn('transition-transform duration-200', lainnyaOpen && 'rotate-180')}/>
+                  </>
+                )}
+              </button>
+
+              <AnimatePresence>
+                {lainnyaOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 4, scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-medium border border-gray-100 overflow-hidden min-w-[200px]"
+                    style={{ zIndex: 9999 }}
+                  >
+                    <div className="p-1.5 max-h-72 overflow-y-auto">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-3 py-1.5">
+                        {t('favorites_other_categories') || t('others') || 'Lainnya'}
+                      </p>
+                      {LAINNYA_SUBCATEGORIES.map(cat => {
+                        const subCount = favorites.filter(f => getFavoriteSubcategory(f).toLowerCase() === cat.toLowerCase()).length;
+                        return (
+                          <button
+                            key={cat}
+                            onClick={() => {
+                              setActiveLainnya(cat);
+                              setActiveChip('lainnya');
+                              setLainnyaOpen(false);
+                              const filtered = favorites.filter(f => getFavoriteSubcategory(f).toLowerCase() === cat.toLowerCase());
+                              setSelectedFav(filtered.length > 0 ? filtered[0] : null);
+                            }}
+                            className={cn(
+                              'w-full flex items-center justify-between px-3 py-2.5 text-xs font-medium rounded-xl transition-all',
+                              activeLainnya === cat
+                                ? 'bg-[#FFF8EC] text-[#FD6825] font-bold'
+                                : 'text-gray-700 hover:bg-gray-50'
+                            )}
+                          >
+                            <span>{cat}</span>
+                            {subCount > 0 && (
+                              <span className={cn(
+                                "px-2 py-0.5 rounded-full text-[10px] font-bold",
+                                activeLainnya === cat ? "bg-[#FD6825]/10 text-[#FD6825]" : "bg-gray-100 text-gray-500"
+                              )}>
+                                {subCount}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-7">
@@ -167,7 +333,7 @@ export default function FavoritesPage() {
               ) : (
                 <AnimatePresence>
                   {filteredFavorites.map((fav, idx) => {
-                    const chip = getChip(fav.category);
+                    const chip = getChip(fav);
                     const isSelected = selectedFav?.id === fav.id;
                     return (
                       <motion.div
@@ -224,20 +390,20 @@ export default function FavoritesPage() {
                     className="bg-white rounded-[24px] overflow-hidden shadow-medium border border-gray-100"
                   >
                     {/* Hero */}
-                    <div className="relative h-44 flex items-center justify-center" style={{ background: `${getChip(selectedFav.category).pinColor}14` }}>
+                    <div className="relative h-44 flex items-center justify-center" style={{ background: `${getChip(selectedFav).pinColor}14` }}>
                       <svg className="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
                         {Array.from({ length: 6 }).map((_, i) => <line key={`h${i}`} x1="0" y1={`${i * 20}%`} x2="100%" y2={`${i * 20}%`} stroke="#000" strokeWidth="0.5"/>)}
                         {Array.from({ length: 6 }).map((_, i) => <line key={`v${i}`} x1={`${i * 20}%`} y1="0" x2={`${i * 20}%`} y2="100%" stroke="#000" strokeWidth="0.5"/>)}
                       </svg>
                       <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"
-                        style={{ background: `${getChip(selectedFav.category).pinColor}22`, color: getChip(selectedFav.category).pinColor }}>
+                        style={{ background: `${getChip(selectedFav).pinColor}22`, color: getChip(selectedFav).pinColor }}>
                         {(() => {
-                          const chip = getChip(selectedFav.category);
+                          const chip = getChip(selectedFav);
                           return <chip.Icon size={38}/>;
                         })()}
                       </div>
                       <div className="absolute bottom-4 left-5">
-                        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full text-white" style={{ background: getChip(selectedFav.category).pinColor }}>
+                        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full text-white" style={{ background: getChip(selectedFav).pinColor }}>
                           {selectedFav.category}
                         </span>
                       </div>
