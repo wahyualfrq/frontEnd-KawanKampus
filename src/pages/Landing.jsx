@@ -6,17 +6,19 @@ import {
   ShoppingBag, ChevronRight, TrendingUp, Clock,
 } from 'lucide-react';
 import BrandLogo from '../components/common/BrandLogo';
+import { usePreferences } from '../context/PreferencesContext';
 
 /* ─────────────────────────────────────────────
    MINI PREVIEWS (CSS-only mockups, no images)
-───────────────────────────────────────────── */
+ ───────────────────────────────────────────── */
 
 function MiniMapPreview() {
+  const { t } = usePreferences();
   const pins = [
-    { top: '28%', left: '18%', color: '#FD6825', label: 'Fotokopi', Icon: Copy },
-    { top: '55%', left: '52%', color: '#22C55E', label: 'Makanan', Icon: Coffee },
-    { top: '20%', left: '65%', color: '#3B82F6', label: 'ATK', Icon: ShoppingBag },
-    { top: '70%', left: '28%', color: '#7C3AED', label: 'Minuman', Icon: Star },
+    { top: '28%', left: '18%', color: '#FD6825', label: t('photocopy'), Icon: Copy },
+    { top: '55%', left: '52%', color: '#22C55E', label: t('food'), Icon: Coffee },
+    { top: '20%', left: '65%', color: '#3B82F6', label: t('atk'), Icon: ShoppingBag },
+    { top: '70%', left: '28%', color: '#7C3AED', label: t('drink'), Icon: Star },
   ];
   return (
     <div className="relative w-full h-full bg-[#F0EDE5] rounded-2xl overflow-hidden">
@@ -60,17 +62,18 @@ function MiniMapPreview() {
       </div>
       {/* Label */}
       <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-xl text-[9px] font-black text-gray-700 shadow-sm border border-gray-100 flex items-center gap-1">
-        <MapPin size={9} className="text-[#FD6825]"/> Area Kampus
+        <MapPin size={9} className="text-[#FD6825]"/> {t('landing_map_campus_area')}
       </div>
     </div>
   );
 }
 
 function MiniKanbanPreview() {
+  const { t } = usePreferences();
   const cols = [
-    { title: 'To Do', color: '#6B7280', tasks: ['Riset paper', 'Outline bab 1'] },
-    { title: 'In Progress', color: '#F97316', tasks: ['Analisis data'] },
-    { title: 'Done', color: '#22C55E', tasks: ['Proposal', 'Survey'] },
+    { title: t('todo'), color: '#6B7280', tasks: [t('landing_kanban_paper_research'), t('landing_kanban_outline_ch1')] },
+    { title: t('in_progress'), color: '#F97316', tasks: [t('landing_kanban_data_analysis')] },
+    { title: t('done'), color: '#22C55E', tasks: [t('landing_kanban_proposal'), t('landing_kanban_survey')] },
   ];
   return (
     <div className="w-full h-full bg-[#F8FAFC] rounded-2xl p-3 border border-gray-100 flex gap-2 overflow-hidden">
@@ -93,10 +96,11 @@ function MiniKanbanPreview() {
 }
 
 function MiniChatPreview() {
+  const { t } = usePreferences();
   const messages = [
-    { sender: 'user', text: 'Bantu rangkum statistika?' },
-    { sender: 'ai', text: 'Tentu! Statistika deskriptif mencakup mean, median, modus...' },
-    { sender: 'user', text: 'Contoh soal latihan?' },
+    { sender: 'user', text: t('landing_chat_question1') },
+    { sender: 'ai', text: t('landing_chat_answer1') },
+    { sender: 'user', text: t('landing_chat_question2') },
   ];
   return (
     <div className="w-full h-full bg-[#F8FAFC] rounded-2xl p-3 border border-gray-100 flex flex-col gap-1.5 overflow-hidden">
@@ -104,10 +108,10 @@ function MiniChatPreview() {
         <div className="w-5 h-5 rounded-lg ai-gradient flex items-center justify-center">
           <MessageSquare size={9} color="white"/>
         </div>
-        <span className="text-[8px] font-black text-gray-700">Bantu Tugas AI</span>
+        <span className="text-[8px] font-black text-gray-700">{t('landing_chat_title')}</span>
         <div className="ml-auto flex items-center gap-1">
           <div className="w-1.5 h-1.5 bg-green-400 rounded-full"/>
-          <span className="text-[7px] text-gray-400 font-medium">Online</span>
+          <span className="text-[7px] text-gray-400 font-medium">{t('landing_chat_online')}</span>
         </div>
       </div>
       {messages.map((m, i) => (
@@ -127,9 +131,10 @@ function MiniChatPreview() {
 
 /* ─────────────────────────────────────────────
    FEATURE CARDS (large, with visual previews)
-───────────────────────────────────────────── */
+ ───────────────────────────────────────────── */
 
 function FeatureCard({ icon: Icon, color, bgColor, gradientFrom, gradientTo, badge, title, desc, preview, onClick }) {
+  const { t } = usePreferences();
   return (
     <div onClick={onClick} className="group relative bg-white rounded-[28px] overflow-hidden
       shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300
@@ -163,7 +168,7 @@ function FeatureCard({ icon: Icon, color, bgColor, gradientFrom, gradientTo, bad
         {/* CTA hint */}
         <div className="flex items-center gap-1 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity mt-auto"
           style={{ color }}>
-          Lihat selengkapnya <ChevronRight size={13}/>
+          {t('landing_features_cta_hint')} <ChevronRight size={13}/>
         </div>
       </div>
     </div>
@@ -172,35 +177,36 @@ function FeatureCard({ icon: Icon, color, bgColor, gradientFrom, gradientTo, bad
 
 /* ─────────────────────────────────────────────
    APP PREVIEW TABS
-───────────────────────────────────────────── */
+ ───────────────────────────────────────────── */
 
 function AppPreviewSection({ active, setActive }) {
+  const { t } = usePreferences();
   const tabs = [
     {
       id: 'places',
-      label: 'Peta Kampus',
+      label: t('landing_features_map_title'),
       icon: MapPin,
       color: '#FD6825',
-      title: 'Temukan tempat di sekitar kampus',
-      desc: 'Peta interaktif dengan rekomendasi tempat berdasarkan kebutuhanmu — dari fotokopi, makanan, ATK, hingga tempat nongkrong.',
+      title: t('landing_tab_map_title'),
+      desc: t('landing_tab_map_desc'),
       preview: <MiniMapPreview/>,
     },
     {
       id: 'kanban',
-      label: 'Kanban Tugas',
+      label: t('landing_features_kanban_title'),
       icon: CheckSquare,
       color: '#7C3AED',
-      title: 'Kelola semua tugas kuliah',
-      desc: 'Board Kanban visual dengan kolom To Do, In Progress, dan Done. Drag & drop tugas antar kolom dengan mudah.',
+      title: t('landing_tab_kanban_title'),
+      desc: t('landing_tab_kanban_desc'),
       preview: <MiniKanbanPreview/>,
     },
     {
       id: 'chatbot',
-      label: 'Chatbot AI',
+      label: t('landing_features_chat_title'),
       icon: MessageSquare,
       color: '#3B82F6',
-      title: 'Asisten AI siap bantu kapan saja',
-      desc: 'Tanyakan apa saja: rangkuman materi, ide tugas, penjelasan konsep, atau apapun yang kamu butuhkan saat belajar.',
+      title: t('landing_tab_chat_title'),
+      desc: t('landing_tab_chat_desc'),
       preview: <MiniChatPreview/>,
     },
   ];
@@ -212,14 +218,14 @@ function AppPreviewSection({ active, setActive }) {
         <div className="text-center mb-14 space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#FFF1E9] rounded-full border border-[#FD6825]/20">
             <TrendingUp size={12} className="text-[#FD6825]"/>
-            <span className="text-[#FD6825] text-xs font-black uppercase tracking-wider">Preview Aplikasi</span>
+            <span className="text-[#FD6825] text-xs font-black uppercase tracking-wider">{t('landing_preview_badge')}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
-            Satu dashboard untuk<br/>
-            <span className="text-[#FD6825]">aktivitas kampusmu.</span>
+            {t('landing_preview_title1')}<br/>
+            <span className="text-[#FD6825]">{t('landing_preview_title2')}</span>
           </h2>
           <p className="text-gray-500 font-medium max-w-md mx-auto">
-            Semua yang kamu butuhkan sudah tersedia — tidak perlu buka banyak aplikasi lagi.
+            {t('landing_preview_subtitle')}
           </p>
         </div>
 
@@ -266,7 +272,7 @@ function AppPreviewSection({ active, setActive }) {
                 className="inline-flex items-center gap-2 text-sm font-bold transition-colors"
                 style={{ color: tabs[active].color }}
               >
-                Coba sekarang <ArrowRight size={15}/>
+                {t('landing_preview_cta')} <ArrowRight size={15}/>
               </Link>
             </div>
             {/* Preview */}
@@ -290,6 +296,7 @@ function AppPreviewSection({ active, setActive }) {
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { preferences, updatePreference, t } = usePreferences();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
@@ -323,27 +330,59 @@ export default function LandingPage() {
 
           {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-1">
-            {[['features', 'Fitur'], ['how', 'Cara Kerja'], ['preview', 'Preview']].map(([id, label]) => (
+            {[
+              ['features', 'nav_features'],
+              ['how', 'nav_how_it_works'],
+              ['preview', 'nav_preview']
+            ].map(([id, key]) => (
               <button
                 key={id}
                 onClick={() => scrollTo(id)}
                 className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-all"
               >
-                {label}
+                {t(key)}
               </button>
             ))}
           </div>
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-2">
+            {/* Language Quick Toggle */}
+            <button
+              onClick={() => updatePreference('language', preferences.language === 'en' ? 'id' : 'en')}
+              className="p-2 mr-1 rounded-xl border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 flex items-center justify-center gap-1.5"
+              title={preferences.language === 'en' ? 'Switch to Bahasa Indonesia' : 'Switch to English'}
+            >
+              {preferences.language === 'en' ? (
+                <>
+                  <svg className="w-5.5 h-3.5 rounded-sm shadow-sm border border-gray-150" viewBox="0 0 50 30">
+                    <rect width="50" height="30" fill="#012169"/>
+                    <path d="M0,0 L50,30 M50,0 L0,30" stroke="#fff" strokeWidth="6"/>
+                    <path d="M0,0 L50,30 M50,0 L0,30" stroke="#C8102E" strokeWidth="4"/>
+                    <path d="M25,0 L25,30 M0,15 L50,15" stroke="#fff" strokeWidth="10"/>
+                    <path d="M25,0 L25,30 M0,15 L50,15" stroke="#C8102E" strokeWidth="6"/>
+                  </svg>
+                  <span className="text-xs font-bold text-gray-600">EN</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-5.5 h-3.5 rounded-sm shadow-sm border border-gray-150" viewBox="0 0 3 2">
+                    <rect width="3" height="1" fill="#EF4444"/>
+                    <rect y="1" width="3" height="1" fill="#FFFFFF"/>
+                  </svg>
+                  <span className="text-xs font-bold text-gray-600">ID</span>
+                </>
+              )}
+            </button>
+
             <Link to="/login"
               className="px-4 py-2 text-sm font-bold text-gray-700 hover:text-gray-900 rounded-xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200">
-              Masuk
+              {t('nav_login')}
             </Link>
             <Link to="/register"
               className="px-5 py-2.5 text-sm font-bold text-white rounded-xl shadow-sm shadow-[#FD6825]/30 transition-all hover:scale-105 active:scale-95"
               style={{ background: 'linear-gradient(135deg, #FD6825 0%, #FFC928 100%)' }}>
-              Daftar Gratis
+              {t('nav_register')}
             </Link>
           </div>
 
@@ -359,25 +398,67 @@ export default function LandingPage() {
         {/* Mobile menu */}
         {menuOpen && (
           <div className="md:hidden bg-white/98 backdrop-blur-md border-t border-gray-100 px-5 py-4 space-y-1 shadow-lg">
-            {[['features', 'Fitur'], ['how', 'Cara Kerja'], ['preview', 'Preview']].map(([id, label]) => (
+            {[
+              ['features', 'nav_features'],
+              ['how', 'nav_how_it_works'],
+              ['preview', 'nav_preview']
+            ].map(([id, key]) => (
               <button
                 key={id}
                 onClick={() => scrollTo(id)}
                 className="w-full text-left px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
               >
-                {label}
+                {t(key)}
               </button>
             ))}
             <div className="flex gap-3 pt-2">
               <Link to="/login" onClick={() => setMenuOpen(false)}
                 className="flex-1 text-center py-3 text-sm font-bold text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all">
-                Masuk
+                {t('nav_login')}
               </Link>
               <Link to="/register" onClick={() => setMenuOpen(false)}
                 className="flex-1 text-center py-3 text-sm font-bold text-white rounded-xl shadow-sm transition-all"
                 style={{ background: 'linear-gradient(135deg, #FD6825 0%, #FFC928 100%)' }}>
-                Daftar
+                {t('nav_register')}
               </Link>
+            </div>
+
+            {/* Language Selection in Mobile Menu */}
+            <div className="flex items-center justify-between py-3 border-t border-gray-100 mt-3 px-4">
+              <span className="text-xs font-bold text-gray-500">{t('language')}</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => updatePreference('language', 'id')}
+                  className={`w-10 h-8 flex items-center justify-center rounded-xl border transition-all active:scale-95 ${
+                    preferences.language === 'id'
+                      ? "bg-[#FFF1E9] border-[#FD6825]/30"
+                      : "bg-white border-gray-200"
+                  }`}
+                  title="Bahasa Indonesia"
+                >
+                  <svg className="w-5 h-3 rounded-sm shadow-sm border border-gray-150" viewBox="0 0 3 2">
+                    <rect width="3" height="1" fill="#EF4444"/>
+                    <rect y="1" width="3" height="1" fill="#FFFFFF"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => updatePreference('language', 'en')}
+                  className={`w-10 h-8 flex items-center justify-center rounded-xl border transition-all active:scale-95 ${
+                    preferences.language === 'en'
+                      ? "bg-[#FFF1E9] border-[#FD6825]/30"
+                      : "bg-white border-gray-200"
+                  }`}
+                  title="English"
+                >
+                  <svg className="w-5 h-3 rounded-sm shadow-sm border border-gray-150" viewBox="0 0 50 30">
+                    <rect width="50" height="30" fill="#012169"/>
+                    <path d="M0,0 L50,30 M50,0 L0,30" stroke="#fff" strokeWidth="6"/>
+                    <path d="M0,0 L50,30 M50,0 L0,30" stroke="#C8102E" strokeWidth="4"/>
+                    <path d="M25,0 L25,30 M0,15 L50,15" stroke="#fff" strokeWidth="10"/>
+                    <path d="M25,0 L25,30 M0,15 L50,15" stroke="#C8102E" strokeWidth="6"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -406,31 +487,31 @@ export default function LandingPage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FD6825]/15 rounded-full border border-[#FD6825]/25">
               <div className="w-1.5 h-1.5 bg-[#FD6825] rounded-full animate-pulse"/>
-              <span className="text-[#FDC439] text-xs font-black uppercase tracking-wider">Platform Mahasiswa</span>
+              <span className="text-[#FDC439] text-xs font-black uppercase tracking-wider">{t('landing_hero_badge')}</span>
             </div>
 
             {/* Headline */}
             <div>
               <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-black text-white leading-[1.1] tracking-tight">
-                Teman produktif
+                {t('landing_hero_title1')}
                 <br/>
-                <span className="text-[#FDC439]">untuk kehidupan</span>
+                <span className="text-[#FDC439]">{t('landing_hero_title2')}</span>
                 <br/>
-                <span className="text-white">kampus.</span>
+                <span className="text-white">{t('landing_hero_title3')}</span>
               </h1>
             </div>
 
             {/* Subheadline */}
             <p className="text-gray-400 text-lg font-medium leading-relaxed max-w-lg">
-              Atur tugas, temukan tempat penting di sekitar kampus, dan dapatkan bantuan AI — semuanya dalam satu platform.
+              {t('landing_hero_subtitle')}
             </p>
 
             {/* Feature chips */}
             <div className="flex flex-wrap gap-2">
               {[
-                { icon: MapPin, label: 'Rekomendasi Tempat', color: '#FD6825' },
-                { icon: CheckSquare, label: 'Kanban Tugas', color: '#7C3AED' },
-                { icon: MessageSquare, label: 'Chatbot AI', color: '#3B82F6' },
+                { icon: MapPin, label: t('landing_hero_chip_places'), color: '#FD6825' },
+                { icon: CheckSquare, label: t('landing_hero_chip_kanban'), color: '#7C3AED' },
+                { icon: MessageSquare, label: t('landing_hero_chip_chatbot'), color: '#3B82F6' },
               ].map(({ icon: Icon, label, color }) => (
                 <div key={label} className="flex items-center gap-2 px-3.5 py-2 bg-white/8 rounded-2xl border border-white/12 backdrop-blur-sm">
                   <Icon size={13} style={{ color }}/>
@@ -445,13 +526,13 @@ export default function LandingPage() {
                 onClick={() => navigate('/register')}
                 className="flex items-center justify-center gap-2 px-7 py-4 bg-[#FD6825] hover:bg-[#E85A1D] text-white font-bold rounded-2xl shadow-lg shadow-[#FD6825]/35 transition-all hover:scale-105 active:scale-95 text-sm"
               >
-                Mulai Sekarang <ArrowRight size={16}/>
+                {t('landing_hero_cta1')} <ArrowRight size={16}/>
               </button>
               <button
                 onClick={() => navigate('/login')}
                 className="flex items-center justify-center gap-2 px-7 py-4 bg-white/10 hover:bg-white/16 text-white font-bold rounded-2xl border border-white/20 transition-all hover:scale-105 active:scale-95 backdrop-blur-sm text-sm"
               >
-                Masuk ke Akun
+                {t('landing_hero_cta2')}
               </button>
             </div>
 
@@ -469,7 +550,7 @@ export default function LandingPage() {
                 ))}
               </div>
               <p className="text-gray-500 text-xs font-medium">
-                Bergabung dengan ratusan mahasiswa produktif
+                {t('landing_hero_social_proof')}
               </p>
             </div>
           </div>
@@ -500,8 +581,8 @@ export default function LandingPage() {
                 <Zap size={15} className="text-[#FD6825]"/>
               </div>
               <div>
-                <p className="text-[10px] text-gray-500 font-medium">Produktivitas</p>
-                <p className="text-sm font-black text-gray-900">3x lebih cepat</p>
+                <p className="text-[10px] text-gray-500 font-medium">{t('landing_hero_stat_prod_label')}</p>
+                <p className="text-sm font-black text-gray-900">{t('landing_hero_stat_prod_value')}</p>
               </div>
             </div>
 
@@ -510,8 +591,8 @@ export default function LandingPage() {
                 <BookOpen size={15} className="text-[#7C3AED]"/>
               </div>
               <div>
-                <p className="text-[10px] text-gray-500 font-medium">AI siap bantu</p>
-                <p className="text-sm font-black text-gray-900">24 jam sehari</p>
+                <p className="text-[10px] text-gray-500 font-medium">{t('landing_hero_stat_ai_label')}</p>
+                <p className="text-sm font-black text-gray-900">{t('landing_hero_stat_ai_value')}</p>
               </div>
             </div>
           </div>
@@ -537,14 +618,14 @@ export default function LandingPage() {
           <div className="text-center mb-16 space-y-4">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#FFF1E9] rounded-full border border-[#FD6825]/20">
               <Star size={12} className="text-[#FD6825]"/>
-              <span className="text-[#FD6825] text-xs font-black uppercase tracking-wider">Fitur Unggulan</span>
+              <span className="text-[#FD6825] text-xs font-black uppercase tracking-wider">{t('landing_features_badge')}</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
-              Semua yang kamu butuhkan,<br/>
-              <span className="text-[#FD6825]">dalam satu tempat.</span>
+              {t('landing_features_title1')}<br/>
+              <span className="text-[#FD6825]">{t('landing_features_title2')}</span>
             </h2>
             <p className="text-gray-500 font-medium max-w-md mx-auto leading-relaxed">
-              Didesain khusus untuk mahasiswa yang ingin lebih terorganisir dan produktif di kampus.
+              {t('landing_features_subtitle')}
             </p>
           </div>
 
@@ -555,9 +636,9 @@ export default function LandingPage() {
               bgColor="#FFF1E9"
               gradientFrom="#FD6825"
               gradientTo="#FFC928"
-              badge="Populer"
-              title="Peta Kampus"
-              desc="Temukan fotokopi, makanan, minuman, ATK, dan kebutuhan lain di sekitar kampus dengan rekomendasi cerdas berbasis lokasimu."
+              badge={t('landing_features_badge_popular')}
+              title={t('landing_features_map_title')}
+              desc={t('landing_features_map_desc')}
               preview={<MiniMapPreview/>}
               onClick={() => {
                 setActiveTab(0);
@@ -570,9 +651,9 @@ export default function LandingPage() {
               bgColor="#EDE9FE"
               gradientFrom="#7C3AED"
               gradientTo="#3B82F6"
-              badge="Kanban"
-              title="Kanban Tugas"
-              desc="Kelola tugas kuliah dengan sistem Kanban visual: To Do, In Progress, dan Done. Pantau progres dan deadline setiap saat."
+              badge={t('landing_features_badge_kanban')}
+              title={t('landing_features_kanban_title')}
+              desc={t('landing_features_kanban_desc')}
               preview={<MiniKanbanPreview/>}
               onClick={() => {
                 setActiveTab(1);
@@ -585,9 +666,9 @@ export default function LandingPage() {
               bgColor="#EFF6FF"
               gradientFrom="#3B82F6"
               gradientTo="#06B6D4"
-              badge="AI-Powered"
-              title="Chatbot AI"
-              desc="Dapatkan bantuan cepat untuk ide, rangkuman materi, penjelasan konsep, dan kebutuhan belajar lainnya dari asisten AI pintar."
+              badge={t('landing_features_badge_ai')}
+              title={t('landing_features_chat_title')}
+              desc={t('landing_features_chat_desc')}
               preview={<MiniChatPreview/>}
               onClick={() => {
                 setActiveTab(2);
@@ -608,11 +689,11 @@ export default function LandingPage() {
           <div className="text-center mb-16 space-y-4">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#FFF1E9] rounded-full border border-[#FD6825]/20">
               <Clock size={12} className="text-[#FD6825]"/>
-              <span className="text-[#FD6825] text-xs font-black uppercase tracking-wider">Cara Kerja</span>
+              <span className="text-[#FD6825] text-xs font-black uppercase tracking-wider">{t('landing_how_badge')}</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-black text-gray-900">Mulai dalam 3 langkah.</h2>
+            <h2 className="text-3xl sm:text-4xl font-black text-gray-900">{t('landing_how_title')}</h2>
             <p className="text-gray-500 font-medium max-w-sm mx-auto">
-              Daftar gratis dan langsung mulai produktif hari ini.
+              {t('landing_how_subtitle')}
             </p>
           </div>
 
@@ -622,20 +703,20 @@ export default function LandingPage() {
 
             {[
               {
-                step: '01', title: 'Buat Akun',
-                desc: 'Daftar gratis dengan nama, email, dan password. Tidak perlu kartu kredit — langsung bisa masuk.',
+                step: '01', title: t('landing_step1_title'),
+                desc: t('landing_step1_desc'),
                 gradFrom: '#FD6825', gradTo: '#FFC928',
                 icon: BookOpen,
               },
               {
-                step: '02', title: 'Jelajahi Kampus',
-                desc: 'Buka peta dan temukan tempat-tempat strategis di sekitar kampusmu — fotokopi, warung, ATK, dan lebih banyak lagi.',
+                step: '02', title: t('landing_step2_title'),
+                desc: t('landing_step2_desc'),
                 gradFrom: '#7C3AED', gradTo: '#3B82F6',
                 icon: MapPin,
               },
               {
-                step: '03', title: 'Kelola & Tanyakan',
-                desc: 'Atur semua tugas kuliah di Kanban dan gunakan Chatbot AI kapan saja kamu butuh bantuan belajar.',
+                step: '03', title: t('landing_step3_title'),
+                desc: t('landing_step3_desc'),
                 gradFrom: '#22C55E', gradTo: '#06B6D4',
                 icon: Zap,
               },
@@ -697,16 +778,16 @@ export default function LandingPage() {
         <div className="relative z-10 max-w-3xl mx-auto px-5 sm:px-8 text-center space-y-8">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#FD6825]/15 rounded-full border border-[#FD6825]/25">
             <Star size={12} className="text-[#FDC439]"/>
-            <span className="text-[#FDC439] text-xs font-black uppercase tracking-wider">Siap Mulai?</span>
+            <span className="text-[#FDC439] text-xs font-black uppercase tracking-wider">{t('landing_cta_badge')}</span>
           </div>
 
           <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
-            Siap membuat aktivitas<br/>
-            <span className="text-[#FDC439]">kampus lebih rapi?</span>
+            {t('landing_cta_title1')}<br/>
+            <span className="text-[#FDC439]">{t('landing_cta_title2')}</span>
           </h2>
 
           <p className="text-gray-400 font-medium text-lg max-w-lg mx-auto leading-relaxed">
-            Mulai dari mencari tempat fotokopi, mengelola tugas, sampai bertanya ke AI — semuanya gratis.
+            {t('landing_cta_subtitle')}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -715,22 +796,22 @@ export default function LandingPage() {
               className="flex items-center justify-center gap-2 px-8 py-4 text-white font-bold rounded-2xl shadow-lg shadow-[#FD6825]/30 transition-all hover:scale-105 active:scale-95"
               style={{ background: 'linear-gradient(135deg, #FD6825 0%, #FFC928 100%)' }}
             >
-              Daftar Gratis <ArrowRight size={16}/>
+              {t('landing_cta_btn_register')} <ArrowRight size={16}/>
             </button>
             <button
               onClick={() => navigate('/login')}
               className="flex items-center justify-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/16 text-white font-bold rounded-2xl border border-white/20 transition-all hover:scale-105 active:scale-95 backdrop-blur-sm"
             >
-              Masuk ke Akun
+              {t('landing_cta_btn_login')}
             </button>
           </div>
 
           {/* Trust indicators */}
           <div className="flex flex-wrap items-center justify-center gap-6 pt-2">
             {[
-              { icon: Star, text: 'Gratis selamanya' },
-              { icon: Zap, text: 'Tanpa setup rumit' },
-              { icon: BookOpen, text: 'Khusus mahasiswa' },
+              { icon: Star, text: t('landing_trust_free') },
+              { icon: Zap, text: t('landing_trust_no_setup') },
+              { icon: BookOpen, text: t('landing_trust_student') },
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-2 text-gray-500 text-sm font-medium">
                 <Icon size={14} className="text-[#FDC439]"/>
@@ -750,17 +831,21 @@ export default function LandingPage() {
 
             {/* Links */}
             <div className="flex items-center gap-6">
-              {[['features', 'Fitur'], ['how', 'Cara Kerja'], ['preview', 'Preview']].map(([id, label]) => (
+              {[
+                ['features', 'nav_features'],
+                ['how', 'nav_how_it_works'],
+                ['preview', 'nav_preview']
+              ].map(([id, key]) => (
                 <button key={id} onClick={() => scrollTo(id)}
                   className="text-gray-600 hover:text-gray-400 text-xs font-semibold transition-colors">
-                  {label}
+                  {t(key)}
                 </button>
               ))}
             </div>
 
             {/* Right */}
             <div className="text-center md:text-right">
-              <p className="text-gray-600 text-xs font-medium">Capstone Project</p>
+              <p className="text-gray-600 text-xs font-medium">{t('landing_footer_capstone')}</p>
               <p className="text-gray-700 text-xs font-medium">© {new Date().getFullYear()} KawanKampus</p>
             </div>
           </div>

@@ -6,16 +6,10 @@ import {
 import useAuthStore from '../store/authStore';
 import { registerUser } from '../services/auth.service';
 import BrandLogo from '../components/common/BrandLogo';
-
-/* ── Benefits shown in left panel ── */
-const BENEFITS = [
-  'Akun gratis selamanya',
-  'Peta rekomendasi tempat kampus',
-  'Manajemen tugas Kanban visual',
-  'Chatbot AI siap bantu 24/7',
-];
+import { usePreferences } from '../context/PreferencesContext';
 
 export default function RegisterPage() {
+  const { t } = usePreferences();
   const navigate = useNavigate();
   const login    = useAuthStore((state) => state.login);
 
@@ -30,17 +24,25 @@ export default function RegisterPage() {
   const [fieldErrors,     setFieldErrors]     = useState({});
   const [success,         setSuccess]         = useState(false);
 
+  /* ── Benefits shown in left panel ── */
+  const BENEFITS = [
+    t('benefit_free'),
+    t('benefit_map'),
+    t('benefit_kanban'),
+    t('benefit_chatbot'),
+  ];
+
   /* ── Validation ── */
   const validate = () => {
     const errs = {};
-    if (!name.trim())              errs.name = 'Nama lengkap wajib diisi.';
-    else if (name.trim().length < 2) errs.name = 'Nama minimal 2 karakter.';
-    if (!email.trim())             errs.email = 'Email wajib diisi.';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errs.email = 'Format email tidak valid.';
-    if (!password)                 errs.password = 'Password wajib diisi.';
-    else if (password.length < 8)  errs.password = 'Password minimal 8 karakter.';
-    if (!confirmPassword)          errs.confirmPassword = 'Konfirmasi password wajib diisi.';
-    else if (password !== confirmPassword) errs.confirmPassword = 'Password tidak cocok.';
+    if (!name.trim())              errs.name = t('name_required');
+    else if (name.trim().length < 2) errs.name = t('name_min_length');
+    if (!email.trim())             errs.email = t('email_required');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errs.email = t('email_invalid');
+    if (!password)                 errs.password = t('password_required');
+    else if (password.length < 8)  errs.password = t('password_min_length');
+    if (!confirmPassword)          errs.confirmPassword = t('confirm_password_required');
+    else if (password !== confirmPassword) errs.confirmPassword = t('passwords_must_match');
     return errs;
   };
 
@@ -71,10 +73,10 @@ export default function RegisterPage() {
   /* ── Password strength ── */
   const passStrength = (() => {
     if (!password) return null;
-    if (password.length < 6)  return { level: 1, label: 'Lemah',  color: '#EF4444' };
-    if (password.length < 8)  return { level: 2, label: 'Sedang', color: '#F97316' };
-    if (/[A-Z]/.test(password) && /[0-9]/.test(password)) return { level: 4, label: 'Kuat', color: '#22C55E' };
-    return { level: 3, label: 'Cukup', color: '#FDC439' };
+    if (password.length < 6)  return { level: 1, label: t('password_strength_weak'),  color: '#EF4444' };
+    if (password.length < 8)  return { level: 2, label: t('password_strength_medium'), color: '#F97316' };
+    if (/[A-Z]/.test(password) && /[0-9]/.test(password)) return { level: 4, label: t('password_strength_strong'), color: '#22C55E' };
+    return { level: 3, label: t('password_strength_fair'), color: '#FDC439' };
   })();
 
   /* ── Input base classes ── */
@@ -119,8 +121,7 @@ export default function RegisterPage() {
                 Kawan<span className="text-[#FDC439]">Kampus</span>
               </h1>
               <p className="text-gray-400 text-sm font-medium leading-relaxed">
-                Daftar gratis dan mulai produktif bersama<br/>
-                ribuan mahasiswa lainnya.
+                {t('register_tagline')}
               </p>
             </div>
           </div>
@@ -138,7 +139,7 @@ export default function RegisterPage() {
           {/* Bottom */}
           <div className="border-t border-white/8 pt-8 text-center">
             <p className="text-gray-600 text-xs font-medium">
-              Capstone Project • Platform Produktivitas Mahasiswa
+              {t('capstone_project')}
             </p>
           </div>
         </div>
@@ -159,10 +160,10 @@ export default function RegisterPage() {
             {/* Header */}
             <div className="mb-7">
               <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-1.5">
-                Buat akun KawanKampus
+                {t('register_title')}
               </h2>
               <p className="text-gray-500 font-medium">
-                Mulai kelola aktivitas kampusmu dengan lebih rapi.
+                {t('register_subtitle')}
               </p>
             </div>
 
@@ -170,7 +171,7 @@ export default function RegisterPage() {
             {success && (
               <div className="mb-6 flex items-center gap-3 p-4 bg-green-50 border border-green-100 rounded-2xl text-green-700 text-sm font-bold">
                 <CheckCircle2 size={18} className="shrink-0 text-green-500"/>
-                <span>Akun berhasil dibuat! Mengalihkan ke dashboard...</span>
+                <span>{t('success_redirect')}</span>
               </div>
             )}
 
@@ -188,7 +189,7 @@ export default function RegisterPage() {
               {/* Name */}
               <div className="space-y-1.5">
                 <label htmlFor="register-name" className="text-sm font-bold text-gray-700">
-                  Nama Lengkap
+                  {t('full_name')}
                 </label>
                 <input
                   id="register-name"
@@ -213,7 +214,7 @@ export default function RegisterPage() {
               {/* Email */}
               <div className="space-y-1.5">
                 <label htmlFor="register-email" className="text-sm font-bold text-gray-700">
-                  Email
+                  {t('email_address')}
                 </label>
                 <input
                   id="register-email"
@@ -238,14 +239,14 @@ export default function RegisterPage() {
               {/* Password */}
               <div className="space-y-1.5">
                 <label htmlFor="register-password" className="text-sm font-bold text-gray-700">
-                  Password
+                  {t('password')}
                 </label>
                 <div className="relative">
                   <input
                     id="register-password"
                     type={showPass ? 'text' : 'password'}
                     autoComplete="new-password"
-                    placeholder="Minimal 8 karakter"
+                    placeholder={t('password_placeholder')}
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
@@ -259,7 +260,7 @@ export default function RegisterPage() {
                     tabIndex={-1}
                     onClick={() => setShowPass(v => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-all"
-                    aria-label={showPass ? 'Sembunyikan password' : 'Tampilkan password'}
+                    aria-label={showPass ? t('hide_password') : t('show_password')}
                   >
                     {showPass ? <EyeOff size={16}/> : <Eye size={16}/>}
                   </button>
@@ -288,14 +289,14 @@ export default function RegisterPage() {
               {/* Confirm password */}
               <div className="space-y-1.5">
                 <label htmlFor="register-confirm-password" className="text-sm font-bold text-gray-700">
-                  Konfirmasi Password
+                  {t('confirm_password')}
                 </label>
                 <div className="relative">
                   <input
                     id="register-confirm-password"
                     type={showConfirm ? 'text' : 'password'}
                     autoComplete="new-password"
-                    placeholder="Ulangi password"
+                    placeholder={t('repeat_password_placeholder')}
                     value={confirmPassword}
                     onChange={(e) => {
                       setConfirmPassword(e.target.value);
@@ -309,7 +310,7 @@ export default function RegisterPage() {
                     tabIndex={-1}
                     onClick={() => setShowConfirm(v => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-all"
-                    aria-label={showConfirm ? 'Sembunyikan password' : 'Tampilkan password'}
+                    aria-label={showConfirm ? t('hide_password') : t('show_password')}
                   >
                     {showConfirm ? <EyeOff size={16}/> : <Eye size={16}/>}
                   </button>
@@ -317,7 +318,7 @@ export default function RegisterPage() {
                 {/* Match indicator */}
                 {confirmPassword && password && confirmPassword === password && !fieldErrors.confirmPassword && (
                   <p className="text-xs font-medium text-green-600 flex items-center gap-1">
-                    <CheckCircle2 size={11}/> Password cocok
+                    <CheckCircle2 size={11}/> {t('password_matched')}
                   </p>
                 )}
                 {fieldErrors.confirmPassword && (
@@ -342,15 +343,15 @@ export default function RegisterPage() {
                 {loading ? (
                   <>
                     <Loader2 size={17} className="animate-spin"/>
-                    Membuat akun...
+                    {t('creating_account')}
                   </>
                 ) : success ? (
                   <>
                     <CheckCircle2 size={17}/>
-                    Berhasil!
+                    {t('success_created')}
                   </>
                 ) : (
-                  <>Daftar <ArrowRight size={16}/></>
+                  <>{t('register_now')} <ArrowRight size={16}/></>
                 )}
               </button>
             </form>
@@ -361,7 +362,7 @@ export default function RegisterPage() {
                 <div className="w-full border-t border-gray-100"/>
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="bg-white px-3 text-gray-400 font-medium">Sudah punya akun?</span>
+                <span className="bg-white px-3 text-gray-400 font-medium">{t('already_have_account')}</span>
               </div>
             </div>
 
@@ -370,14 +371,14 @@ export default function RegisterPage() {
               to="/login"
               className="flex items-center justify-center gap-2 w-full py-3 border-2 border-gray-200 hover:border-[#FD6825]/40 hover:bg-[#FFF1E9] text-gray-700 hover:text-[#FD6825] font-bold rounded-2xl text-sm transition-all"
             >
-              Masuk ke akun <ArrowRight size={15}/>
+              {t('login_to_account')} <ArrowRight size={15}/>
             </Link>
           </div>
 
           {/* Back link */}
           <p className="mt-5 text-center">
             <Link to="/" className="text-xs text-gray-400 hover:text-gray-600 font-medium transition-colors">
-              ← Kembali ke halaman utama
+              {t('back_to_main')}
             </Link>
           </p>
         </div>

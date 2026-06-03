@@ -517,7 +517,7 @@ export default function FavoritesPage() {
                               navigator.share({ title: selectedFav.name, url: selectedFav.mapLink });
                             } else {
                               navigator.clipboard.writeText(selectedFav.mapLink);
-                              alert('Link disalin!');
+                              alert(t('link_copied'));
                             }
                           }}
                           className="flex flex-col items-center gap-1.5 group"
@@ -640,7 +640,7 @@ export default function FavoritesPage() {
                                 navigator.share({ title: selectedFav.name, url: selectedFav.mapLink });
                               } else {
                                 navigator.clipboard.writeText(selectedFav.mapLink);
-                                alert('Link disalin!');
+                                alert(t('link_copied'));
                               }
                             }}
                             className="flex flex-col items-center gap-1.5 group"

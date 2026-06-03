@@ -488,7 +488,7 @@ function PlaceDetail({ place, isFavorited, onToggleFavorite, getMapsUrl, handleO
                         .catch(() => {});
                     } else {
                       navigator.clipboard.writeText(routeUrl);
-                      alert('Link berhasil disalin!');
+                      alert(t('link_copied'));
                     }
                   }}
                   disabled={!routeUrl}

@@ -7,15 +7,10 @@ import {
 import useAuthStore from '../store/authStore';
 import { loginUser } from '../services/auth.service';
 import BrandLogo from '../components/common/BrandLogo';
-
-/* ── Decorative left-panel features list ── */
-const FEATURES = [
-  { icon: MapPin,       color: '#FD6825', bg: '#FFF1E9', label: 'Peta & Rekomendasi Tempat Kampus' },
-  { icon: CheckSquare,  color: '#7C3AED', bg: '#EDE9FE', label: 'Manajemen Tugas Kanban' },
-  { icon: MessageSquare,color: '#3B82F6', bg: '#EFF6FF', label: 'Chatbot AI Bantu Tugas' },
-];
+import { usePreferences } from '../context/PreferencesContext';
 
 export default function LoginPage() {
+  const { t } = usePreferences();
   const navigate  = useNavigate();
   const login     = useAuthStore((state) => state.login);
 
@@ -26,15 +21,22 @@ export default function LoginPage() {
   const [error,        setError]       = useState('');
   const [fieldErrors,  setFieldErrors] = useState({});
 
+  /* ── Decorative left-panel features list ── */
+  const FEATURES = [
+    { icon: MapPin,       color: '#FD6825', bg: '#FFF1E9', label: t('feature_places') },
+    { icon: CheckSquare,  color: '#7C3AED', bg: '#EDE9FE', label: t('feature_kanban') },
+    { icon: MessageSquare,color: '#3B82F6', bg: '#EFF6FF', label: t('feature_chatbot') },
+  ];
+
   /* ── Validation ── */
   const validate = () => {
     const errs = {};
     if (!email.trim())
-      errs.email = 'Email wajib diisi.';
+      errs.email = t('email_required');
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
-      errs.email = 'Format email tidak valid.';
+      errs.email = t('email_invalid');
     if (!password)
-      errs.password = 'Password wajib diisi.';
+      errs.password = t('password_required');
     return errs;
   };
 
@@ -102,8 +104,7 @@ export default function LoginPage() {
                 Kawan<span className="text-[#FDC439]">Kampus</span>
               </h1>
               <p className="text-gray-400 text-sm font-medium leading-relaxed">
-                Platform asisten mahasiswa digital —<br/>
-                peta kampus, Kanban, dan AI dalam satu tempat.
+                {t('login_tagline')}
               </p>
             </div>
           </div>
@@ -125,7 +126,7 @@ export default function LoginPage() {
           {/* Bottom quote */}
           <div className="border-t border-white/8 pt-8 text-center">
             <p className="text-gray-600 text-xs font-medium">
-              Capstone Project • Platform Produktivitas Mahasiswa
+              {t('capstone_project')}
             </p>
           </div>
         </div>
@@ -146,10 +147,10 @@ export default function LoginPage() {
             {/* Header */}
             <div className="mb-8">
               <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-1.5">
-                Masuk ke KawanKampus
+                {t('login_title')}
               </h2>
               <p className="text-gray-500 font-medium">
-                Lanjutkan aktivitas belajarmu hari ini.
+                {t('login_subtitle')}
               </p>
             </div>
 
@@ -167,7 +168,7 @@ export default function LoginPage() {
               {/* Email */}
               <div className="space-y-1.5">
                 <label htmlFor="login-email" className="text-sm font-bold text-gray-700">
-                  Email
+                  {t('email_address')}
                 </label>
                 <input
                   id="login-email"
@@ -192,7 +193,7 @@ export default function LoginPage() {
               {/* Password */}
               <div className="space-y-1.5">
                 <label htmlFor="login-password" className="text-sm font-bold text-gray-700">
-                  Password
+                  {t('password')}
                 </label>
                 <div className="relative">
                   <input
@@ -213,7 +214,7 @@ export default function LoginPage() {
                     tabIndex={-1}
                     onClick={() => setShowPass(v => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-all"
-                    aria-label={showPass ? 'Sembunyikan password' : 'Tampilkan password'}
+                    aria-label={showPass ? t('hide_password') : t('show_password')}
                   >
                     {showPass ? <EyeOff size={16}/> : <Eye size={16}/>}
                   </button>
@@ -240,10 +241,10 @@ export default function LoginPage() {
                 {loading ? (
                   <>
                     <Loader2 size={17} className="animate-spin"/>
-                    Memproses...
+                    {t('processing')}
                   </>
                 ) : (
-                  <>Masuk <ArrowRight size={16}/></>
+                  <>{t('login_button')} <ArrowRight size={16}/></>
                 )}
               </button>
             </form>
@@ -254,7 +255,7 @@ export default function LoginPage() {
                 <div className="w-full border-t border-gray-100"/>
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="bg-white px-3 text-gray-400 font-medium">Belum punya akun?</span>
+                <span className="bg-white px-3 text-gray-400 font-medium">{t('no_account')}</span>
               </div>
             </div>
 
@@ -263,14 +264,14 @@ export default function LoginPage() {
               to="/register"
               className="flex items-center justify-center gap-2 w-full py-3 border-2 border-gray-200 hover:border-[#FD6825]/40 hover:bg-[#FFF1E9] text-gray-700 hover:text-[#FD6825] font-bold rounded-2xl text-sm transition-all"
             >
-              Daftar sekarang <ArrowRight size={15}/>
+              {t('register_now')} <ArrowRight size={15}/>
             </Link>
           </div>
 
           {/* Back link */}
           <p className="mt-5 text-center">
             <Link to="/" className="text-xs text-gray-400 hover:text-gray-600 font-medium transition-colors">
-              ← Kembali ke halaman utama
+              {t('back_to_main')}
             </Link>
           </p>
         </div>

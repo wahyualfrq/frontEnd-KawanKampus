@@ -299,7 +299,7 @@ export default function AppLayout() {
                   {/* Language Quick Switcher */}
                   <div className="px-5 py-2.5 border-t border-gray-50 flex items-center justify-between">
                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">
-                      {preferences.language === 'en' ? 'Language' : 'Bahasa'}
+                      {t('language')}
                     </span>
                     <div className="flex gap-2">
                       <button 

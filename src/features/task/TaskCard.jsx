@@ -235,7 +235,7 @@ export default function TaskCard({ task, isOverlay, onDelete, onEdit, onStatusCh
           onPointerDown={(e) => e.stopPropagation()}
         >
           <span className="text-[9px] font-black text-gray-400 uppercase tracking-wider mr-auto">
-            {preferences?.language === 'en' ? 'Move to:' : 'Pindah ke:'}
+            {t('move_to')}:
           </span>
           {STATUS_MOVES[task.status]?.map((s) => {
             const btnStyles = STATUS_BUTTON_CONFIG[s] || 'border-gray-200 text-gray-600 bg-gray-50';
