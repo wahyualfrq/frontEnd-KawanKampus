@@ -20,6 +20,9 @@ const CHIP_DEFS = [
   { id: 'minuman',  label: 'Minuman',  Icon: Coffee,   chipBg: '#22C55E', chipText: '#fff',    pinColor: '#22C55E' },
 ];
 
+// Page size for pagination
+const PAGE_SIZE = 15;
+
 function getChip(id) {
   const lower = id?.toLowerCase();
   return (
@@ -184,9 +187,9 @@ function MapPlaceholder({ places, selectedUni, zoom, setZoom, centerCoords, panO
             </div>
           </div>
 
-          {/* Dynamic Place pins */}
+          {/* Dynamic Place pins — only from displayedRecommendations */}
           {places.length > 0 &&
-            places.slice(0, 15).map((place, i) => {
+            places.map((place, i) => {
               const chip = getChip(place.category);
               const pos = getMarkerPosition(place, centerCoords);
               const isSelected = selectedPlace?.id === place.id;
@@ -555,16 +558,17 @@ export default function PlacesPage() {
   const [panOffset, setPanOffset]         = useState({ x: 0, y: 0 });
   const prevUniRef                        = useRef('');
 
-  // Results
-  const [places, setPlaces]               = useState([]);
-  const [selectedPlace, setSelectedPlace] = useState(null);
-  const [loading, setLoading]             = useState(false);
-  const [error, setError]                 = useState('');
-  const [hasSearched, setHasSearched]     = useState(false);
-  const [favorites, setFavorites]         = useState([]);
+  // Results — allRecommendations stores full list from backend
+  const [allRecommendations, setAllRecommendations] = useState([]);
+  const [selectedPlace, setSelectedPlace]           = useState(null);
+  const [loading, setLoading]                       = useState(false);
+  const [error, setError]                           = useState('');
+  const [hasSearched, setHasSearched]               = useState(false);
+  const [favorites, setFavorites]                   = useState([]);
+  const [visibleLimit, setVisibleLimit]             = useState(PAGE_SIZE);
 
   // Client-side text filter
-  const [filterQuery, setFilterQuery]     = useState('');
+  const [searchQuery, setSearchQuery]               = useState('');
 
   // ── Load config ──
   useEffect(() => {
@@ -614,24 +618,30 @@ export default function PlacesPage() {
   const campusList     = appConfig.campuses       || FALLBACK_CONFIG.campuses;
   const lainnyaCats    = appConfig.lainnyaCategories || FALLBACK_CONFIG.lainnyaCategories;
 
-  // Client-side filter on displayed places (sorted by distance ascending)
-  const processedPlaces = [...places].sort((a, b) => {
+  // ── Derived state ──
+  // Sort allRecommendations by distanceMeters ascending
+  const sortedRecommendations = [...allRecommendations].sort((a, b) => {
     const distA = a.distanceMeters ?? Infinity;
     const distB = b.distanceMeters ?? Infinity;
     return distA - distB;
   });
 
-  const filteredPlaces = filterQuery.trim()
-    ? processedPlaces.filter(p => {
-        const q = filterQuery.toLowerCase();
+  // filteredRecommendations: search from allRecommendations (not displayedRecommendations)
+  const filteredRecommendations = searchQuery.trim()
+    ? sortedRecommendations.filter(p => {
+        const q = searchQuery.toLowerCase().trim();
         return (
           p.name?.toLowerCase().includes(q) ||
           p.category?.toLowerCase().includes(q) ||
+          p.rawCategory?.toLowerCase().includes(q) ||
           p.address?.toLowerCase().includes(q) ||
           p.description?.toLowerCase().includes(q)
         );
       })
-    : processedPlaces;
+    : sortedRecommendations;
+
+  // displayedRecommendations: only what we show in cards and on map
+  const displayedRecommendations = filteredRecommendations.slice(0, visibleLimit);
 
   const isPlaceFavorited = (place) => {
     if (!place) return false;
@@ -701,6 +711,8 @@ export default function PlacesPage() {
     setActiveChip(chipId);
     setActiveLainnya(null);
     setLainnyaOpen(false);
+    setSearchQuery('');
+    setVisibleLimit(PAGE_SIZE);
   };
 
   // ── Lainnya sub-category select ──
@@ -708,25 +720,29 @@ export default function PlacesPage() {
     setActiveLainnya(rawCat);
     setActiveChip('lainnya');
     setLainnyaOpen(false);
+    setSearchQuery('');
+    setVisibleLimit(PAGE_SIZE);
   };
 
   // ── Core search ──
   const runSearch = async (loc, apiCat) => {
     if (!selectedUni) { setError('Pilih kampus terlebih dahulu.'); return; }
-    setLoading(true); setHasSearched(true); setPlaces([]); setSelectedPlace(null); setError(''); setFilterQuery('');
+    setLoading(true); setHasSearched(true); setAllRecommendations([]); setSelectedPlace(null); setError('');
+    setSearchQuery('');
+    setVisibleLimit(PAGE_SIZE);
     try {
-      const results = await placesService.getRecommendations({
+      const result = await placesService.getRecommendations({
         selected_uni: selectedUni,
         selected_cat: apiCat,
         lat: loc.lat,
         lon: loc.lon,
       });
-      if (results && results.success === false && results.code === 'PLACE_RECOMMENDER_NOT_CONFIGURED') {
+      if (result && result.success === false && result.code === 'PLACE_RECOMMENDER_NOT_CONFIGURED') {
         setError('PLACE_RECOMMENDER_NOT_CONFIGURED');
-        setPlaces([]);
+        setAllRecommendations([]);
         setSelectedPlace(null);
       } else {
-        setPlaces(results);
+        setAllRecommendations(result.recommendations || []);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal mendapatkan rekomendasi. Coba lagi.');
@@ -851,7 +867,7 @@ export default function PlacesPage() {
 
       {/* ── Map ── */}
       <MapPlaceholder
-        places={places}
+        places={displayedRecommendations}
         selectedUni={selectedUni}
         zoom={zoom}
         setZoom={setZoom}
@@ -974,7 +990,7 @@ export default function PlacesPage() {
       )}
 
       {/* No results from API */}
-      {!loading && hasSearched && places.length === 0 && !error && (
+      {!loading && hasSearched && allRecommendations.length === 0 && !error && (
         <motion.div 
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -992,56 +1008,68 @@ export default function PlacesPage() {
       )}
 
       {/* Results */}
-      {!loading && places.length > 0 && (
+      {!loading && allRecommendations.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-7">
 
-          {/* Left: list + filter */}
+          {/* Left: list + search */}
           <div className="lg:col-span-7 space-y-4">
             {/* Header */}
             <div className="flex items-start justify-between gap-3 px-1">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">{t('places_near_you')}</h2>
                 <p className="text-sm text-gray-400 font-medium mt-0.5">
-                  {activeChip === 'all'
-                    ? `Menampilkan ${filteredPlaces.length} rekomendasi terdekat dari beberapa kategori`
-                    : `Menampilkan ${filteredPlaces.length} rekomendasi terdekat · ${activeChipLabel}`}
+                  {searchQuery.trim()
+                    ? (
+                        filteredRecommendations.length <= visibleLimit
+                          ? `Ditemukan ${filteredRecommendations.length} hasil untuk “${searchQuery.trim()}”`
+                          : `Menampilkan ${displayedRecommendations.length} dari ${filteredRecommendations.length} hasil untuk “${searchQuery.trim()}”`
+                      )
+                    : (
+                        activeChip === 'all'
+                          ? `Menampilkan ${displayedRecommendations.length} dari ${allRecommendations.length} rekomendasi terdekat dari beberapa kategori`
+                          : `Menampilkan ${displayedRecommendations.length} dari ${allRecommendations.length} rekomendasi terdekat · ${activeChipLabel}`
+                      )
+                  }
                 </p>
               </div>
             </div>
 
-            {/* Text filter ── */}
+            {/* Search bar ── searches allRecommendations, not displayedRecommendations */}
             <div className="relative">
               <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
               <input
-                value={filterQuery}
-                onChange={e => setFilterQuery(e.target.value)}
-                placeholder={t('search_places_placeholder') || 'Cari tempat dari hasil rekomendasi...'}
+                value={searchQuery}
+                onChange={e => {
+                  setSearchQuery(e.target.value);
+                  setVisibleLimit(PAGE_SIZE);
+                }}
+                placeholder="Cari dari semua rekomendasi..."
                 className="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-[#FD6825]/15 focus:border-[#FD6825] shadow-soft transition-all placeholder:text-gray-300"
               />
-              {filterQuery && (
-                <button onClick={() => setFilterQuery('')}
+              {searchQuery && (
+                <button onClick={() => { setSearchQuery(''); setVisibleLimit(PAGE_SIZE); }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                   <X size={14}/>
                 </button>
               )}
             </div>
 
-            {/* Filtered empty state */}
-            {filteredPlaces.length === 0 && filterQuery && (
+            {/* Search empty state */}
+            {filteredRecommendations.length === 0 && searchQuery.trim() && (
               <div className="flex flex-col items-center py-10 text-gray-400 gap-2">
                 <Search size={28} className="text-gray-200"/>
-                <p className="text-sm font-bold">{(t('no_results_for') || 'Tidak ada hasil untuk') + ` "${filterQuery}"`}</p>
-                <button onClick={() => setFilterQuery('')} className="text-xs text-[#FD6825] font-bold hover:underline">{t('clear_filter') || 'Hapus filter'}</button>
+                <p className="text-sm font-bold">Tidak ada tempat yang cocok dengan pencarian ini.</p>
+                <button onClick={() => { setSearchQuery(''); setVisibleLimit(PAGE_SIZE); }} className="text-xs text-[#FD6825] font-bold hover:underline">Hapus pencarian</button>
               </div>
             )}
 
-            {/* Cards */}
+            {/* Cards — only displayedRecommendations */}
             <div className="space-y-3">
               <AnimatePresence>
-                {filteredPlaces.map((place, idx) => (
+                {displayedRecommendations.map((place, idx) => (
                   <motion.div key={place.id || idx}
                     initial={{ opacity:0, y:6 }} animate={{ opacity:1, y:0 }}
-                    transition={{ delay:idx * 0.04 }}>
+                    transition={{ delay: Math.min(idx, 6) * 0.04 }}>
                     <PlaceCard
                       place={place}
                       isSelected={selectedPlace?.id === place.id}
@@ -1053,6 +1081,32 @@ export default function PlacesPage() {
                 ))}
               </AnimatePresence>
             </div>
+
+            {/* Tampilkan lebih banyak button */}
+            {filteredRecommendations.length > visibleLimit ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-center pt-2"
+              >
+                <button
+                  onClick={() => setVisibleLimit(v => v + PAGE_SIZE)}
+                  className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 hover:border-[#FD6825] hover:text-[#FD6825] shadow-soft hover:shadow-md active:scale-95 transition-all"
+                >
+                  <ChevronDown size={16}/>
+                  Tampilkan lebih banyak
+                  <span className="text-xs font-normal text-gray-400 ml-1">
+                    ({visibleLimit} / {filteredRecommendations.length})
+                  </span>
+                </button>
+              </motion.div>
+            ) : (
+              allRecommendations.length > PAGE_SIZE && filteredRecommendations.length > 0 && (
+                <p className="text-center text-xs text-gray-400 font-medium pt-2">
+                  Semua rekomendasi sudah ditampilkan.
+                </p>
+              )
+            )}
           </div>
 
           {/* Right: detail (Desktop) */}

@@ -214,7 +214,8 @@ const placesService = {
   /**
    * POST /places/recommend
    * selected_cat must be a valid Kategori_Awal value (e.g. "Fotokopi", "Makanan", "Cafe").
-   * Returns normalised place array — distanceText is NEVER "NaN m".
+   * Returns { recommendations, totalBeforeLimit, returnedCount, fetchLimit }.
+   * distanceText is NEVER "NaN m".
    */
   getRecommendations: async ({ selected_uni, selected_cat, lat, lon, session_id, actual_category }) => {
     const response = await api.post('/places/recommend', {
@@ -238,7 +239,19 @@ const placesService = {
 
     // Extract recommendations array from any shape the backend returns
     let list = [];
+    let totalBeforeLimit = null;
+    let returnedCount = null;
+    let fetchLimit = null;
+
     if (resData) {
+      // Try to extract metadata from backend response
+      const innerData = resData.data || resData;
+      if (typeof innerData === 'object' && !Array.isArray(innerData)) {
+        totalBeforeLimit = innerData.totalBeforeLimit ?? resData.totalBeforeLimit ?? null;
+        returnedCount    = innerData.returnedCount    ?? resData.returnedCount    ?? null;
+        fetchLimit       = innerData.fetchLimit       ?? resData.fetchLimit       ?? null;
+      }
+
       if (resData.data && Array.isArray(resData.data.recommendations)) {
         list = resData.data.recommendations;
       } else if (Array.isArray(resData.recommendations)) {
@@ -259,7 +272,19 @@ const placesService = {
     }
 
     // Client-side normalisation as a second safety net (never NaN distanceText)
-    return list.map((item, idx) => normalizePlace(item, idx, selected_cat));
+    const recommendations = list.map((item, idx) => {
+      const normalized = normalizePlace(item, idx, selected_cat);
+      // Preserve rawCategory for search filtering
+      normalized.rawCategory = item.Kategori_Awal || item.kategori || item.category || selected_cat || '';
+      return normalized;
+    });
+
+    return {
+      recommendations,
+      totalBeforeLimit: totalBeforeLimit ?? recommendations.length,
+      returnedCount:    returnedCount    ?? recommendations.length,
+      fetchLimit:       fetchLimit       ?? recommendations.length,
+    };
   },
 
   /**
