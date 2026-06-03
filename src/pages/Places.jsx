@@ -727,7 +727,6 @@ export default function PlacesPage() {
         setSelectedPlace(null);
       } else {
         setPlaces(results);
-        if (results.length > 0) setSelectedPlace(results[0]);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal mendapatkan rekomendasi. Coba lagi.');
