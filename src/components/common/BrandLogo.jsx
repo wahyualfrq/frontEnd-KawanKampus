@@ -7,9 +7,9 @@
  *  dark      boolean            — use dark-mode safe version (e.g. in sidebar)
  *  className string             — extra Tailwind / CSS classes
  */
-import logoMark from '../../assets/brand/kawan-kampus-mark.png';
-import logoTextLight from '../../assets/brand/kawan-kampus-text.png';
-import logoTextDark from '../../assets/brand/kawan-kampus-text-dark.png';
+import logoMark from '../../assets/brand/kawan-kampus-mark.webp';
+import logoTextLight from '../../assets/brand/kawan-kampus-text.webp';
+import logoTextDark from '../../assets/brand/kawan-kampus-text-dark.webp';
 
 // Size config: [markSize, textSize (rem), gap (rem)]
 const SIZE_CONFIG = {
