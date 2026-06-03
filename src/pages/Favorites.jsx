@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  MapPin, Star, Bookmark, Share2, Trash2, Navigation,
+  MapPin, Star, Heart, Share2, Trash2, Navigation,
   ExternalLink, Loader2, Grid, Printer, Book, Utensils, Coffee, AlertCircle,
   ChevronDown, X, Search
 } from 'lucide-react';
@@ -225,7 +225,7 @@ export default function FavoritesPage() {
         // Empty State
         <div className="flex flex-col items-center justify-center py-16 text-gray-400 bg-white rounded-[24px] border border-gray-100 shadow-soft max-w-xl mx-auto space-y-5">
           <div className="w-20 h-20 rounded-3xl bg-[#FFF8EC] flex items-center justify-center border border-[#FDC439]/20 shadow-sm">
-            <Bookmark className="w-10 h-10 text-[#FD6825]" />
+            <Heart className="w-10 h-10 text-[#FD6825] fill-[#FD6825]" />
           </div>
           <div className="text-center space-y-1 px-6">
             <h2 className="font-bold text-gray-900 text-lg">{t('no_favorites')}</h2>
@@ -475,9 +475,9 @@ export default function FavoritesPage() {
                       <div className="grid grid-cols-3 gap-3 border-t border-b border-gray-50 py-3.5">
                         <button className="flex flex-col items-center gap-1.5 group">
                           <div className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all bg-[#FFF8EC] text-[#FD6825]">
-                            <Bookmark size={17} fill="#FD6825"/>
+                            <Heart size={17} fill="#FD6825"/>
                           </div>
-                          <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('save')}</span>
+                          <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('favorit')}</span>
                         </button>
                         <button
                           onClick={() => {
@@ -598,9 +598,9 @@ export default function FavoritesPage() {
                         <div className="grid grid-cols-3 gap-3 border-t border-b border-gray-50 py-3.5">
                           <button className="flex flex-col items-center gap-1.5 group">
                             <div className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all bg-[#FFF8EC] text-[#FD6825]">
-                              <Bookmark size={17} fill="#FD6825"/>
+                              <Heart size={17} fill="#FD6825"/>
                             </div>
-                            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('save')}</span>
+                            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('favorit')}</span>
                           </button>
                           <button
                             onClick={() => {

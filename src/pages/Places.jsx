@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  MapPin, Star, Bookmark, Share2, ChevronDown,
+  MapPin, Star, Heart, Share2, ChevronDown,
   Printer, Book, Utensils, Coffee, Grid, Loader2,
   AlertCircle, ExternalLink, Search, X, Plus, Minus, Crosshair, Navigation
 } from 'lucide-react';
@@ -306,7 +306,7 @@ function PlaceCard({ place, isSelected, isFavorited, onToggleFavorite, onClick }
         <div className="flex items-start justify-between gap-2 mb-0.5">
           <h3 className="font-bold text-gray-900 text-[15px] leading-snug truncate pr-1">{place.name}</h3>
           <button onClick={e => { e.stopPropagation(); onToggleFavorite(); }} className="shrink-0 mt-0.5 p-1 hover:bg-gray-50 rounded-lg transition-colors">
-            <Bookmark size={17} className={isFavorited ? 'text-[#FD6825]' : 'text-gray-300 hover:text-[#FD6825] transition-colors'}
+            <Heart size={17} className={isFavorited ? 'text-[#FD6825] fill-[#FD6825]' : 'text-gray-300 hover:text-[#FD6825] transition-colors'}
               fill={isFavorited ? '#FD6825' : 'none'}/>
           </button>
         </div>
@@ -475,9 +475,9 @@ function PlaceDetail({ place, isFavorited, onToggleFavorite, getMapsUrl, handleO
                     'w-11 h-11 rounded-2xl flex items-center justify-center transition-all',
                     isFavorited ? 'bg-[#FFF8EC] text-[#FD6825]' : 'bg-gray-50 text-gray-400 group-hover:bg-[#FD6825]/10 group-hover:text-[#FD6825]'
                   )}>
-                    <Bookmark size={18} fill={isFavorited ? '#FD6825' : 'none'}/>
+                    <Heart size={18} fill={isFavorited ? '#FD6825' : 'none'}/>
                   </div>
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('save')}</span>
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('favorit')}</span>
                 </button>
 
                 <button
