@@ -305,26 +305,35 @@ export default function AppLayout() {
                       <button 
                         onClick={() => updatePreference('language', 'id')}
                         className={cn(
-                          "w-9 h-9 flex items-center justify-center rounded-xl text-lg border transition-all active:scale-95",
+                          "w-10 h-8 flex items-center justify-center rounded-xl border transition-all active:scale-95",
                           preferences.language === 'id' 
                             ? "bg-[#FFF1E9] border-[#FD6825]/30" 
                             : "bg-white border-gray-200 hover:bg-gray-50"
                         )}
                         title="Bahasa Indonesia"
                       >
-                        🇮🇩
+                        <svg className="w-5.5 h-3.5 rounded-sm shadow-sm border border-gray-150" viewBox="0 0 3 2">
+                          <rect width="3" height="1" fill="#EF4444"/>
+                          <rect y="1" width="3" height="1" fill="#FFFFFF"/>
+                        </svg>
                       </button>
                       <button 
                         onClick={() => updatePreference('language', 'en')}
                         className={cn(
-                          "w-9 h-9 flex items-center justify-center rounded-xl text-lg border transition-all active:scale-95",
+                          "w-10 h-8 flex items-center justify-center rounded-xl border transition-all active:scale-95",
                           preferences.language === 'en' 
                             ? "bg-[#FFF1E9] border-[#FD6825]/30" 
                             : "bg-white border-gray-200 hover:bg-gray-50"
                         )}
-                        title="English (US)"
+                        title="English"
                       >
-                        🇺🇸
+                        <svg className="w-5.5 h-3.5 rounded-sm shadow-sm border border-gray-150" viewBox="0 0 50 30">
+                          <rect width="50" height="30" fill="#012169"/>
+                          <path d="M0,0 L50,30 M50,0 L0,30" stroke="#fff" strokeWidth="6"/>
+                          <path d="M0,0 L50,30 M50,0 L0,30" stroke="#C8102E" strokeWidth="4"/>
+                          <path d="M25,0 L25,30 M0,15 L50,15" stroke="#fff" strokeWidth="10"/>
+                          <path d="M25,0 L25,30 M0,15 L50,15" stroke="#C8102E" strokeWidth="6"/>
+                        </svg>
                       </button>
                     </div>
                   </div>
