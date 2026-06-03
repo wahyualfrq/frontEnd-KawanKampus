@@ -50,7 +50,7 @@ const STATUS_BUTTON_CONFIG = {
 
 // ── TaskCard component ────────────────────────────────────────────────────────
 export default function TaskCard({ task, isOverlay, onDelete, onEdit, onStatusChange }) {
-  const { preferences } = usePreferences();
+  const { preferences, t } = usePreferences();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
