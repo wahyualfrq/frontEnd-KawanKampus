@@ -254,10 +254,49 @@ export default function KanbanBoard() {
   // ── Loading state ─────────────────────────────────────────────────────────
   if (isLoading && tasks.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-[400px]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-[#FD6825]/20 border-t-[#FD6825] rounded-full animate-spin" />
-          <p className="text-sm font-semibold text-gray-400">Memuat tugas...</p>
+      <div className="w-full flex flex-col space-y-6 md:space-y-8 animate-pulse">
+        {/* Shimmering Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="space-y-2">
+            <div className="h-8 w-48 bg-gray-200 rounded-xl" />
+            <div className="h-4 w-72 bg-gray-200 rounded-lg" />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-24 bg-gray-200 rounded-2xl" />
+            <div className="h-11 w-32 bg-gray-200 rounded-2xl" />
+            <div className="h-11 w-28 bg-gray-200 rounded-2xl" />
+          </div>
+        </div>
+
+        {/* Shimmering Board Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 pb-8">
+          {['To Do', 'In Progress', 'Done'].map((colTitle, i) => (
+            <div key={i} className="bg-white/40 border border-gray-100 rounded-[28px] p-5 flex flex-col h-full min-h-[500px] space-y-4">
+              {/* Column Title */}
+              <div className="flex justify-between items-center pb-2">
+                <div className="h-5 w-24 bg-gray-200 rounded-lg" />
+                <div className="h-6 w-8 bg-gray-200 rounded-full" />
+              </div>
+              
+              {/* Column Cards */}
+              <div className="space-y-3 flex-1">
+                {Array.from({ length: 2 }).map((_, j) => (
+                  <div key={j} className="bg-white border border-gray-100 p-4.5 rounded-[20px] shadow-soft space-y-3.5">
+                    <div className="flex justify-between">
+                      <div className="h-4 w-12 bg-gray-200 rounded-lg" />
+                      <div className="h-4 w-4 bg-gray-200 rounded" />
+                    </div>
+                    <div className="h-5 w-5/6 bg-gray-200 rounded-lg" />
+                    <div className="h-4 w-2/3 bg-gray-200 rounded-lg" />
+                    <div className="flex justify-between items-center pt-2">
+                      <div className="h-4 w-20 bg-gray-200 rounded-lg" />
+                      <div className="h-6 w-16 bg-gray-200 rounded-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );

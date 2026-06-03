@@ -923,11 +923,54 @@ export default function PlacesPage() {
         </motion.div>
       )}
 
-      {/* Loading */}
+      {/* Loading Skeleton */}
       {loading && (
-        <div className="flex items-center justify-center gap-3 py-14 text-gray-400">
-          <Loader2 size={26} className="animate-spin text-[#FD6825]"/>
-          <span className="text-sm font-bold">{t('loading')}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-7">
+          {/* Left: list skeleton */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="space-y-2 px-1">
+              <div className="h-6 w-48 bg-gray-200 rounded-lg animate-pulse" />
+              <div className="h-4 w-72 bg-gray-200 rounded-md animate-pulse" />
+            </div>
+            <div className="h-12 w-full bg-gray-100 rounded-2xl animate-pulse" />
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 p-4 rounded-[18px] border border-gray-100 bg-white animate-pulse">
+                  <div className="w-14 h-14 rounded-2xl bg-gray-100 shrink-0" />
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex justify-between">
+                      <div className="h-4 w-1/3 bg-gray-100 rounded" />
+                      <div className="h-4 w-4 bg-gray-100 rounded" />
+                    </div>
+                    <div className="h-3.5 w-1/4 bg-gray-100 rounded" />
+                    <div className="h-3 w-1/2 bg-gray-100 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: detail skeleton */}
+          <div className="hidden lg:block lg:col-span-5 sticky top-28 h-fit">
+            <div className="bg-white rounded-[24px] overflow-hidden shadow-medium border border-gray-100 animate-pulse">
+              <div className="h-52 bg-gray-100 w-full" />
+              <div className="p-5 space-y-5">
+                <div className="flex justify-between items-start">
+                  <div className="h-6 w-1/2 bg-gray-100 rounded" />
+                  <div className="h-8 w-16 bg-gray-100 rounded-xl" />
+                </div>
+                <div className="h-4 w-2/3 bg-gray-100 rounded" />
+                <div className="h-16 w-full bg-gray-50 rounded-2xl" />
+                <div className="h-14 w-full bg-gray-100 rounded-2xl" />
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="h-16 bg-gray-50 rounded-2xl" />
+                  <div className="h-16 bg-gray-50 rounded-2xl" />
+                  <div className="h-16 bg-gray-50 rounded-2xl" />
+                </div>
+                <div className="h-12 w-full bg-gray-100 rounded-[16px]" />
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

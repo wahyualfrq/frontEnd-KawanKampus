@@ -217,9 +217,41 @@ export default function FavoritesPage() {
       )}
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
-          <Loader2 size={32} className="animate-spin text-[#FD6825]"/>
-          <span className="text-sm font-bold">{t('loading')}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-7">
+          {/* Left: list skeleton */}
+          <div className="lg:col-span-7 space-y-3">
+            <div className="h-12 w-full bg-gray-100 rounded-2xl animate-pulse" />
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 p-4 rounded-[18px] border border-gray-100 bg-white animate-pulse">
+                  <div className="w-12 h-12 rounded-2xl bg-gray-100 shrink-0" />
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="h-4 w-1/3 bg-gray-100 rounded" />
+                    <div className="h-3 w-1/4 bg-gray-100 rounded" />
+                    <div className="h-3 w-1/2 bg-gray-100 rounded" />
+                  </div>
+                  <div className="w-8 h-8 rounded-xl bg-gray-50 shrink-0" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: detail skeleton */}
+          <div className="hidden lg:block lg:col-span-5 sticky top-28 h-fit animate-pulse">
+            <div className="bg-white rounded-[24px] overflow-hidden shadow-medium border border-gray-100">
+              <div className="h-44 bg-gray-100 w-full" />
+              <div className="p-5 space-y-5">
+                <div className="h-6 w-1/2 bg-gray-100 rounded" />
+                <div className="h-14 w-full bg-gray-50 rounded-2xl" />
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="h-14 bg-gray-50 rounded-2xl" />
+                  <div className="h-14 bg-gray-50 rounded-2xl" />
+                  <div className="h-14 bg-gray-50 rounded-2xl" />
+                </div>
+                <div className="h-12 w-full bg-gray-100 rounded-[16px]" />
+              </div>
+            </div>
+          </div>
         </div>
       ) : favorites.length === 0 ? (
         // Empty State

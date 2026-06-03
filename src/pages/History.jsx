@@ -277,9 +277,22 @@ export default function HistoryPage() {
  
       {/* Main List */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
-          <Loader2 size={32} className="animate-spin text-[#FD6825]"/>
-          <span className="text-sm font-bold">{t('loading')}</span>
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-start gap-4 p-4 rounded-[18px] border border-gray-50 bg-white animate-pulse">
+              <div className="w-9 h-9 rounded-xl bg-gray-100 shrink-0" />
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-16 bg-gray-100 rounded" />
+                  <div className="h-3 w-2 bg-gray-100 rounded" />
+                  <div className="h-3 w-10 bg-gray-100 rounded" />
+                </div>
+                <div className="h-4 w-1/3 bg-gray-100 rounded" />
+                <div className="h-3 w-1/2 bg-gray-100 rounded" />
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-gray-50 shrink-0" />
+            </div>
+          ))}
         </div>
       ) : histories.length === 0 ? (
         // Empty State

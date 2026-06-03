@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import BrandLogo from '../common/BrandLogo';
+import PageSkeleton from '../common/PageSkeleton';
 import { Search, Bell, MessageSquare, ChevronDown, Map as MapIcon, LayoutDashboard, Heart, History } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { usePreferences } from '../../context/PreferencesContext';
@@ -310,7 +311,9 @@ export default function AppLayout() {
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-24 lg:pb-8">
-          <Outlet />
+          <Suspense fallback={<PageSkeleton />}>
+            <Outlet />
+          </Suspense>
         </main>
 
         {/* Bottom navigation for mobile/tablet */}
