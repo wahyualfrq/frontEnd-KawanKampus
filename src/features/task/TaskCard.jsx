@@ -42,6 +42,12 @@ const STATUS_LABELS = {
   DONE:        'Done',
 };
 
+const STATUS_BUTTON_CONFIG = {
+  TODO:        'border-gray-200 text-gray-600 bg-gray-50 hover:bg-gray-100',
+  IN_PROGRESS: 'border-orange-100 text-orange-600 bg-orange-50/50 hover:bg-orange-50',
+  DONE:        'border-emerald-100 text-emerald-600 bg-emerald-50/50 hover:bg-emerald-50',
+};
+
 // ── TaskCard component ────────────────────────────────────────────────────────
 export default function TaskCard({ task, isOverlay, onDelete, onEdit, onStatusChange }) {
   const { preferences } = usePreferences();
@@ -135,7 +141,7 @@ export default function TaskCard({ task, isOverlay, onDelete, onEdit, onStatusCh
               <button
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => { e.stopPropagation(); setMenuOpen(o => !o); }}
-                className="p-1.5 text-gray-300 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-gray-50"
+                className="p-1.5 text-gray-400 hover:text-gray-600 md:opacity-0 md:group-hover:opacity-100 transition-all rounded-lg hover:bg-gray-50"
               >
                 <MoreVertical size={13} />
               </button>
@@ -221,6 +227,34 @@ export default function TaskCard({ task, isOverlay, onDelete, onEdit, onStatusCh
               <CheckCircle2 size={11} color="white" />
             </div>
           )}
+        </div>
+
+        {/* Mobile-only quick status move buttons */}
+        <div 
+          className="flex md:hidden items-center gap-1.5 pt-3 border-t border-gray-100 mt-2" 
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <span className="text-[9px] font-black text-gray-400 uppercase tracking-wider mr-auto">
+            {preferences?.language === 'en' ? 'Move to:' : 'Pindah ke:'}
+          </span>
+          {STATUS_MOVES[task.status]?.map((s) => {
+            const btnStyles = STATUS_BUTTON_CONFIG[s] || 'border-gray-200 text-gray-600 bg-gray-50';
+            return (
+              <button
+                key={s}
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  onStatusChange(task.id, s); 
+                }}
+                className={cn(
+                  "px-2.5 py-1.5 rounded-xl text-[9px] font-black border transition-all active:scale-95",
+                  btnStyles
+                )}
+              >
+                {STATUS_LABELS[s]}
+              </button>
+            );
+          })}
         </div>
       </div>
 
