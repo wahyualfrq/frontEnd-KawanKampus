@@ -170,6 +170,7 @@ export const translations = {
     clear_history: 'Hapus Riwayat',
     confirm_clear_history: 'Apakah Anda yakin ingin menghapus seluruh riwayat aktivitas Anda?',
     history_detail_unavailable: 'Detail aktivitas tidak tersedia.',
+    showing_activities: 'Menampilkan {start}–{end} dari {total} aktivitas',
 
     // Chatbot Page
     bantu_tugas: 'Bantu Tugas',
@@ -415,6 +416,7 @@ export const translations = {
     clear_history: 'Clear History',
     confirm_clear_history: 'Are you sure you want to clear your entire activity history?',
     history_detail_unavailable: 'Activity details are unavailable.',
+    showing_activities: 'Showing {start}–{end} of {total} activities',
 
     // Chatbot Page
     bantu_tugas: 'Task Help',

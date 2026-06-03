@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Clock, Search, Navigation, Bookmark, Bot, Trash2,
   AlertCircle, Loader2, Calendar, ShieldAlert, ArrowRight, ExternalLink,
-  Plus, Pencil, CheckCircle2, ChevronRight, LayoutList, X
+  Plus, Pencil, CheckCircle2, ChevronLeft, ChevronRight, LayoutList, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../utils/cn';
@@ -69,7 +69,13 @@ export default function HistoryPage() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const { t, formatTime: ctxFormatTime, formatDateTime: ctxFormatDateTime } = usePreferences();
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery]);
 
   const fetchHistories = async () => {
     try {
@@ -185,7 +191,13 @@ export default function HistoryPage() {
     return groups;
   };
 
-  const grouped = groupHistoryByDate(filteredHistories);
+  const totalPages = Math.ceil(filteredHistories.length / itemsPerPage);
+  const activePage = Math.max(1, Math.min(currentPage, totalPages));
+  const startIndex = (activePage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedHistories = filteredHistories.slice(startIndex, endIndex);
+
+  const grouped = groupHistoryByDate(paginatedHistories);
 
   const formatTime = (isoString) => {
     return ctxFormatTime(isoString);
@@ -503,6 +515,68 @@ export default function HistoryPage() {
               </div>
             );
           })}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-gray-100 pt-6 mt-6 flex-wrap gap-4">
+              <div className="text-xs font-medium text-gray-400">
+                {t('showing_activities', {
+                  start: startIndex + 1,
+                  end: Math.min(endIndex, filteredHistories.length),
+                  total: filteredHistories.length
+                })}
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={activePage === 1}
+                  className="p-2 rounded-xl border border-gray-100 bg-white text-gray-600 hover:border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white disabled:hover:border-gray-100 transition-all shadow-soft cursor-pointer disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                  const isSelected = page === activePage;
+                  
+                  // Smart pagination rendering if there are too many pages
+                  if (totalPages > 5) {
+                    if (page !== 1 && page !== totalPages && Math.abs(page - activePage) > 1) {
+                      if (page === 2 && activePage > 3) {
+                        return <span key="dots-start" className="text-gray-300 px-1 text-xs">...</span>;
+                      }
+                      if (page === totalPages - 1 && activePage < totalPages - 2) {
+                        return <span key="dots-end" className="text-gray-300 px-1 text-xs">...</span>;
+                      }
+                      return null;
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={cn(
+                        "w-9 h-9 flex items-center justify-center rounded-xl text-xs font-bold transition-all border shadow-soft cursor-pointer",
+                        isSelected 
+                          ? "bg-gray-900 text-white border-transparent"
+                          : "bg-white text-gray-600 border-gray-100 hover:border-gray-200 hover:bg-gray-50"
+                      )}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={activePage === totalPages}
+                  className="p-2 rounded-xl border border-gray-100 bg-white text-gray-600 hover:border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white disabled:hover:border-gray-100 transition-all shadow-soft cursor-pointer disabled:cursor-not-allowed"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
