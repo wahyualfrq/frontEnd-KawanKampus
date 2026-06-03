@@ -544,7 +544,7 @@ export default function PlacesPage() {
   const [configLoading, setConfigLoading] = useState(true);
 
   // UI
-  const [activeChip, setActiveChip]       = useState('fotokopi');
+  const [activeChip, setActiveChip]       = useState('all');
   const [lainnyaOpen, setLainnyaOpen]     = useState(false);
   const [activeLainnya, setActiveLainnya] = useState(null); // raw category chosen from Lainnya
   const lainnyaRef                        = useRef(null);
@@ -806,7 +806,7 @@ export default function PlacesPage() {
                 <X size={13} onClick={e => {
                   e.stopPropagation();
                   setActiveLainnya(null);
-                  setActiveChip('fotokopi');
+                  setActiveChip('all');
                 }}/>
               </>
             ) : (
