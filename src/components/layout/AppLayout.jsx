@@ -158,7 +158,7 @@ export default function AppLayout() {
                 </button>
 
                 {isNotifDropdownOpen && (
-                  <div className="absolute right-[-12px] sm:right-0 mt-2 w-[calc(100vw-32px)] sm:w-80 bg-white rounded-[24px] shadow-medium border border-gray-100 py-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="fixed sm:absolute top-20 sm:top-auto right-4 left-4 sm:right-0 sm:left-auto mt-2 w-auto sm:w-80 bg-white rounded-[24px] shadow-medium border border-gray-100 py-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="px-5 pb-3 border-b border-gray-50 flex items-center justify-between">
                       <span className="text-sm font-bold text-gray-900">{t('notifications')}</span>
                       {preferences.appNotifications && recentActivities.length > 0 && (
