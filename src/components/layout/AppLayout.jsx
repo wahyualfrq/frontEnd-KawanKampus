@@ -301,28 +301,30 @@ export default function AppLayout() {
                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">
                       {preferences.language === 'en' ? 'Language' : 'Bahasa'}
                     </span>
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-2">
                       <button 
                         onClick={() => updatePreference('language', 'id')}
                         className={cn(
-                          "px-2.5 py-1.5 rounded-xl text-[10px] font-black border transition-all active:scale-95",
+                          "w-9 h-9 flex items-center justify-center rounded-xl text-lg border transition-all active:scale-95",
                           preferences.language === 'id' 
-                            ? "bg-[#FFF1E9] text-[#FD6825] border-[#FD6825]/30" 
-                            : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                            ? "bg-[#FFF1E9] border-[#FD6825]/30" 
+                            : "bg-white border-gray-200 hover:bg-gray-50"
                         )}
+                        title="Bahasa Indonesia"
                       >
-                        🇮🇩 ID
+                        🇮🇩
                       </button>
                       <button 
                         onClick={() => updatePreference('language', 'en')}
                         className={cn(
-                          "px-2.5 py-1.5 rounded-xl text-[10px] font-black border transition-all active:scale-95",
+                          "w-9 h-9 flex items-center justify-center rounded-xl text-lg border transition-all active:scale-95",
                           preferences.language === 'en' 
-                            ? "bg-[#FFF1E9] text-[#FD6825] border-[#FD6825]/30" 
-                            : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                            ? "bg-[#FFF1E9] border-[#FD6825]/30" 
+                            : "bg-white border-gray-200 hover:bg-gray-50"
                         )}
+                        title="English (US)"
                       >
-                        🇺🇸 EN
+                        🇺🇸
                       </button>
                     </div>
                   </div>
