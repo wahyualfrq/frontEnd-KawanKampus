@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../utils/cn';
 import historyService from '../services/history.service';
 import { usePreferences } from '../context/PreferencesContext';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 const TABS = [
   { id: 'all',      labelKey: 'history_all_activities', defaultLabel: 'Semua Aktivitas', Icon: Clock },
@@ -64,6 +66,8 @@ function getActionStyle(action, t) {
 }
 
 export default function HistoryPage() {
+  const { showToast } = useToast();
+  const confirm = useConfirm();
   const [histories, setHistories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -95,21 +99,38 @@ export default function HistoryPage() {
   }, []);
 
   const handleDeleteHistory = async (id) => {
+    const ok = await confirm({
+      title: 'Hapus item riwayat?',
+      description: 'Item ini akan dihapus dari riwayat aktivitas Anda.',
+      confirmText: 'Hapus',
+      cancelText: 'Batal',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       await historyService.deleteHistory(id);
       setHistories(prev => prev.filter(h => h.id !== id));
+      showToast('Item riwayat berhasil dihapus.', 'success');
     } catch (err) {
-      setError('Gagal menghapus entri riwayat.');
+      showToast('Gagal menghapus data. Coba lagi.', 'error');
     }
   };
 
   const handleClearHistory = async () => {
-    if (!window.confirm(t('confirm_clear_history') || 'Apakah Anda yakin ingin menghapus seluruh riwayat aktivitas Anda?')) return;
+    const ok = await confirm({
+      title: 'Hapus seluruh riwayat?',
+      description: 'Seluruh riwayat aktivitas Anda akan dihapus secara permanen.',
+      confirmText: 'Hapus',
+      cancelText: 'Batal',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       await historyService.clearHistories();
       setHistories([]);
+      showToast('Riwayat berhasil dibersihkan.', 'success');
     } catch (err) {
-      setError('Gagal membersihkan riwayat aktivitas.');
+      showToast('Gagal membersihkan riwayat aktivitas.', 'error');
     }
   };
 

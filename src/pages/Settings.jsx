@@ -7,8 +7,12 @@ import { cn } from '../utils/cn';
 import useAuthStore from '../store/authStore';
 import settingsService from '../services/settings.service';
 import { usePreferences } from '../context/PreferencesContext';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 export default function SettingsPage() {
+  const { showToast } = useToast();
+  const confirm = useConfirm();
   const { user, login, logout } = useAuthStore();
   const fileInputRef = useRef(null);
   const { preferences, updatePreference, t, formatDateTime } = usePreferences();
@@ -28,8 +32,6 @@ export default function SettingsPage() {
   // States
   const [activeMenu, setActiveMenu] = useState('profile');
   const [loading, setLoading] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
 
   // Profile Form States
   const [isEditMode, setIsEditMode] = useState(false);
@@ -70,7 +72,6 @@ export default function SettingsPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      setErrorMsg('');
       const prof = await settingsService.getProfile();
       setProfileForm({
         name: prof.name || '',
@@ -83,7 +84,7 @@ export default function SettingsPage() {
         avatarUrl: prof.avatarUrl || ''
       });
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || t('error'));
+      showToast(err.response?.data?.message || t('error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -94,15 +95,7 @@ export default function SettingsPage() {
   }, []);
 
   const handleToast = (success, message) => {
-    if (success) {
-      setSuccessMsg(message);
-      setErrorMsg('');
-      setTimeout(() => setSuccessMsg(''), 3000);
-    } else {
-      setErrorMsg(message);
-      setSuccessMsg('');
-      setTimeout(() => setErrorMsg(''), 4000);
-    }
+    showToast(message, success ? 'success' : 'error');
   };
 
   // Profile Save
@@ -221,7 +214,14 @@ export default function SettingsPage() {
 
   // Clear Activity logs
   const handleClearHistory = async () => {
-    if (!window.confirm(t('confirm_clear_history') || 'Yakin ingin menghapus seluruh riwayat aktivitas?')) return;
+    const ok = await confirm({
+      title: 'Bersihkan riwayat aktivitas?',
+      description: 'Riwayat pencarian, rute, favorit, chatbot, dan aktivitas tugas akan dihapus dari akun ini. Data tugas dan favorit tidak ikut terhapus.',
+      confirmText: 'Bersihkan',
+      cancelText: 'Batal',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       setLoading(true);
       await settingsService.clearHistory();
@@ -264,18 +264,6 @@ export default function SettingsPage() {
           <p className="text-sm text-gray-400 font-medium mt-1">{t('settings_desc')}</p>
         </div>
       </div>
-
-      {/* Messages */}
-      {successMsg && (
-        <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 px-4 py-3 rounded-xl border border-green-100 mb-6 transition-all duration-200">
-          <Check size={16}/> {successMsg}
-        </div>
-      )}
-      {errorMsg && (
-        <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 px-4 py-3 rounded-xl border border-red-100 mb-6 transition-all duration-200">
-          <AlertCircle size={16}/> {errorMsg}
-        </div>
-      )}
 
       {/* Top Menu Tabs for Mobile/Tablet */}
       <div className="lg:hidden flex items-center gap-2 overflow-x-auto scrollbar-hide pb-3.5 mb-2 w-full">

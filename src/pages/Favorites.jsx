@@ -10,6 +10,8 @@ import { cn } from '../utils/cn';
 import favoritesService from '../services/favorites.service';
 import historyService from '../services/history.service';
 import { usePreferences } from '../context/PreferencesContext';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 const CHIP_DEFS = [
   { id: 'all',      label: 'Semua',    Icon: Grid,     chipBg: '#FDC439', chipText: '#111827', pinColor: '#FD6825' },
@@ -98,6 +100,8 @@ function getChip(categoryOrFav) {
 export default function FavoritesPage() {
   const navigate = useNavigate();
   const { t } = usePreferences();
+  const { showToast } = useToast();
+  const confirm = useConfirm();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -153,7 +157,15 @@ export default function FavoritesPage() {
   }, []);
 
   const handleRemoveFavorite = async (e, id, placeName) => {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
+    const ok = await confirm({
+      title: 'Hapus dari favorit?',
+      description: 'Tempat ini akan dihapus dari daftar favorit Anda.',
+      confirmText: 'Hapus',
+      cancelText: 'Batal',
+      variant: 'danger',
+    });
+    if (!ok) return false;
     try {
       await favoritesService.removeFavorite(id);
 
@@ -164,8 +176,11 @@ export default function FavoritesPage() {
         }
         return next;
       });
+      showToast('Favorit berhasil dihapus.', 'success');
+      return true;
     } catch (err) {
-      setError('Gagal menghapus tempat favorit.');
+      showToast('Gagal menghapus data. Coba lagi.', 'error');
+      return false;
     }
   };
 
@@ -517,7 +532,7 @@ export default function FavoritesPage() {
                               navigator.share({ title: selectedFav.name, url: selectedFav.mapLink });
                             } else {
                               navigator.clipboard.writeText(selectedFav.mapLink);
-                              alert(t('link_copied'));
+                              showToast(t('link_copied') || 'Link berhasil disalin.', 'success');
                             }
                           }}
                           className="flex flex-col items-center gap-1.5 group"
@@ -640,7 +655,7 @@ export default function FavoritesPage() {
                                 navigator.share({ title: selectedFav.name, url: selectedFav.mapLink });
                               } else {
                                 navigator.clipboard.writeText(selectedFav.mapLink);
-                                alert(t('link_copied'));
+                                showToast(t('link_copied') || 'Link berhasil disalin.', 'success');
                               }
                             }}
                             className="flex flex-col items-center gap-1.5 group"
@@ -651,9 +666,9 @@ export default function FavoritesPage() {
                             <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('share')}</span>
                           </button>
                           <button
-                            onClick={(e) => {
-                              handleRemoveFavorite(e, selectedFav.id, selectedFav.name);
-                              setSelectedFav(null);
+                            onClick={async (e) => {
+                              const deleted = await handleRemoveFavorite(e, selectedFav.id, selectedFav.name);
+                              if (deleted) setSelectedFav(null);
                             }}
                             className="flex flex-col items-center gap-1.5 group"
                           >

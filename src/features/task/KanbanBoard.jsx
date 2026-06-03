@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../context/ConfirmContext';
 import {
   DndContext,
   DragOverlay,
@@ -34,6 +36,8 @@ const STATUS_LABELS = { TODO: 'To Do', IN_PROGRESS: 'In Progress', DONE: 'Done' 
 
 export default function KanbanBoard() {
   const { t } = usePreferences();
+  const { showToast } = useToast();
+  const confirm = useConfirm();
   const { tasks, setTasks, addTask, updateTask, deleteTask, moveTask } = useTaskStore();
   const queryClient = useQueryClient();
 
@@ -120,7 +124,11 @@ export default function KanbanBoard() {
     mutationFn: taskService.deleteTask,
     onSuccess: (_, id) => {
       deleteTask(id);
+      showToast('Tugas berhasil dihapus.', 'success');
       queryClient.invalidateQueries(['tasks']);
+    },
+    onError: () => {
+      showToast('Gagal menghapus tugas. Coba lagi.', 'error');
     },
   });
 
@@ -171,8 +179,15 @@ export default function KanbanBoard() {
     }
   };
 
-  const handleDeleteTask = (id) => {
-    if (window.confirm(t('hapus_tugas_confirm') || 'Hapus tugas ini?')) {
+  const handleDeleteTask = async (id) => {
+    const ok = await confirm({
+      title: 'Hapus tugas?',
+      description: 'Tugas ini akan dihapus dari daftar tugas Anda.',
+      confirmText: 'Hapus',
+      cancelText: 'Batal',
+      variant: 'danger',
+    });
+    if (ok) {
       deleteMutation.mutate(id);
     }
   };

@@ -10,6 +10,7 @@ import placesService, { FALLBACK_CONFIG } from '../services/places.service';
 import favoritesService from '../services/favorites.service';
 import historyService from '../services/history.service';
 import { usePreferences } from '../context/PreferencesContext';
+import { useToast } from '../context/ToastContext';
 
 // ── Chip definitions (visual only — API values come from loaded config) ──────
 const CHIP_DEFS = [
@@ -338,6 +339,7 @@ function PlaceCard({ place, isSelected, isFavorited, onToggleFavorite, onClick }
 function PlaceDetail({ place, isFavorited, onToggleFavorite, getMapsUrl, handleOpenRoute, selectedUni }) {
   const chip = getChip(place.category);
   const { t, formatDistance } = usePreferences();
+  const { showToast } = useToast();
   return (
     <motion.div key={place.id}
       initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}
@@ -491,7 +493,7 @@ function PlaceDetail({ place, isFavorited, onToggleFavorite, getMapsUrl, handleO
                         .catch(() => {});
                     } else {
                       navigator.clipboard.writeText(routeUrl);
-                      alert(t('link_copied'));
+                      showToast(t('link_copied') || 'Link berhasil disalin.', 'success');
                     }
                   }}
                   disabled={!routeUrl}
@@ -542,8 +544,10 @@ function PlaceDetail({ place, isFavorited, onToggleFavorite, getMapsUrl, handleO
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function PlacesPage() {
   const { t } = usePreferences();
-  // Config
-  const [appConfig, setAppConfig]         = useState(FALLBACK_CONFIG);
+  const { showToast } = useToast();
+  
+  // App Config loading & config state
+  const [appConfig,     setAppConfig]     = useState(FALLBACK_CONFIG);
   const [configLoading, setConfigLoading] = useState(true);
 
   // UI
@@ -681,6 +685,7 @@ export default function PlacesPage() {
       console.warn('[Places] Failed to record OPENED_MAP_ROUTE:', e.message);
     }
 
+    showToast('Rute dibuka di Google Maps.', 'success');
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
@@ -696,13 +701,16 @@ export default function PlacesPage() {
         if (match) {
           await favoritesService.removeFavorite(match.id);
           setFavorites(prev => prev.filter(f => f.id !== match.id));
+          showToast('Favorit berhasil dihapus.', 'success');
         }
       } else {
         const newFav = await favoritesService.addFavorite({ ...place, campus: selectedUni });
         setFavorites(prev => [...prev, newFav]);
+        showToast('Favorit berhasil disimpan.', 'success');
       }
     } catch (err) {
       console.error('Failed to toggle favorite', err);
+      showToast('Gagal melakukan aksi. Coba lagi.', 'error');
     }
   };
 
