@@ -11,7 +11,7 @@ import { cn } from '../../utils/cn';
 
 export default function AppLayout() {
   const { user, logout } = useAuthStore();
-  const { preferences, t, formatTime } = usePreferences();
+  const { preferences, t, formatTime, updatePreference } = usePreferences();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -294,6 +294,37 @@ export default function AppLayout() {
                     >
                       {t('riwayat')}
                     </button>
+                  </div>
+
+                  {/* Language Quick Switcher */}
+                  <div className="px-5 py-2.5 border-t border-gray-50 flex items-center justify-between">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">
+                      {preferences.language === 'en' ? 'Language' : 'Bahasa'}
+                    </span>
+                    <div className="flex gap-1.5">
+                      <button 
+                        onClick={() => updatePreference('language', 'id')}
+                        className={cn(
+                          "px-2.5 py-1.5 rounded-xl text-[10px] font-black border transition-all active:scale-95",
+                          preferences.language === 'id' 
+                            ? "bg-[#FFF1E9] text-[#FD6825] border-[#FD6825]/30" 
+                            : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                        )}
+                      >
+                        🇮🇩 ID
+                      </button>
+                      <button 
+                        onClick={() => updatePreference('language', 'en')}
+                        className={cn(
+                          "px-2.5 py-1.5 rounded-xl text-[10px] font-black border transition-all active:scale-95",
+                          preferences.language === 'en' 
+                            ? "bg-[#FFF1E9] text-[#FD6825] border-[#FD6825]/30" 
+                            : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                        )}
+                      >
+                        🇺🇸 EN
+                      </button>
+                    </div>
                   </div>
 
                   <div className="px-2 pt-1 border-t border-gray-50">
