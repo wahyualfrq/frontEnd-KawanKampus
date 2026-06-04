@@ -520,9 +520,12 @@ export default function FavoritesPage() {
                       )}
 
                       <div className="grid grid-cols-3 gap-3 border-t border-b border-gray-50 py-3.5">
-                        <button className="flex flex-col items-center gap-1.5 group">
-                          <div className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all bg-[#FFF8EC] text-[#FD6825]">
-                            <Heart size={17} fill="#FD6825"/>
+                        <button
+                          onClick={(e) => handleRemoveFavorite(e, selectedFav.id, selectedFav.name)}
+                          className="flex flex-col items-center gap-1.5 group"
+                        >
+                          <div className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all bg-[#FFF8EC] text-[#FD6825] group-hover:bg-red-50 group-hover:text-red-500">
+                            <Heart size={17} fill="#FD6825" className="group-hover:fill-red-500 transition-colors"/>
                           </div>
                           <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('favorit')}</span>
                         </button>
@@ -643,9 +646,12 @@ export default function FavoritesPage() {
                         )}
 
                         <div className="grid grid-cols-3 gap-3 border-t border-b border-gray-50 py-3.5">
-                          <button className="flex flex-col items-center gap-1.5 group">
-                            <div className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all bg-[#FFF8EC] text-[#FD6825]">
-                              <Heart size={17} fill="#FD6825"/>
+                          <button
+                            onClick={(e) => handleRemoveFavorite(e, selectedFav.id, selectedFav.name)}
+                            className="flex flex-col items-center gap-1.5 group"
+                          >
+                            <div className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all bg-[#FFF8EC] text-[#FD6825] group-hover:bg-red-50 group-hover:text-red-500">
+                              <Heart size={17} fill="#FD6825" className="group-hover:fill-red-500 transition-colors"/>
                             </div>
                             <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t('favorit')}</span>
                           </button>
