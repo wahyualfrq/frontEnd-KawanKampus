@@ -217,7 +217,7 @@ const placesService = {
    * Returns { recommendations, totalBeforeLimit, returnedCount, fetchLimit }.
    * distanceText is NEVER "NaN m".
    */
-  getRecommendations: async ({ selected_uni, selected_cat, lat, lon, session_id, actual_category }) => {
+  getRecommendations: async ({ selected_uni, selected_cat, lat, lon, session_id, actual_category, searchQuery }) => {
     const response = await api.post('/places/recommend', {
       selected_uni,
       selected_cat,
@@ -225,6 +225,7 @@ const placesService = {
       lon,
       ...(session_id     && { session_id }),
       ...(actual_category && { actual_category }),
+      ...(searchQuery    && { searchQuery }),
     });
 
     const resData = response.data;

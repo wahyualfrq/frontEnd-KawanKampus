@@ -11,6 +11,7 @@ import favoritesService from '../services/favorites.service';
 import historyService from '../services/history.service';
 import { usePreferences } from '../context/PreferencesContext';
 import { useToast } from '../context/ToastContext';
+import PlacesPagination from '../components/PlacesPagination';
 
 // ── Chip definitions (visual only — API values come from loaded config) ──────
 const CHIP_DEFS = [
@@ -569,10 +570,11 @@ export default function PlacesPage() {
   const [error, setError]                           = useState('');
   const [hasSearched, setHasSearched]               = useState(false);
   const [favorites, setFavorites]                   = useState([]);
-  const [visibleLimit, setVisibleLimit]             = useState(PAGE_SIZE);
+  const [currentPage, setCurrentPage]               = useState(1);
 
   // Client-side text filter
   const [searchQuery, setSearchQuery]               = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
   // ── Load config ──
   useEffect(() => {
@@ -590,7 +592,22 @@ export default function PlacesPage() {
     }).catch(e => console.warn('Failed to load favorites:', e.message));
   }, []);
 
-  // Trigger search on selectedUni / activeChip / activeLainnya changes
+  // ── Debounce Search Query ──
+  useEffect(() => {
+    if (searchQuery === '') {
+      setDebouncedSearchQuery('');
+      return;
+    }
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 400);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
+  // ── Unified Fetch Effect (handles race conditions) ──
   useEffect(() => {
     if (!selectedUni || configLoading) return;
 
@@ -607,8 +624,57 @@ export default function PlacesPage() {
 
     const apiCat = activeLainnya || resolveApiCat(activeChip, appConfig);
 
-    runSearch(campusCenter, apiCat);
-  }, [selectedUni, activeChip, activeLainnya, configLoading]);
+    let active = true;
+
+    const fetchData = async () => {
+      setLoading(true);
+      setHasSearched(true);
+      setError('');
+
+      try {
+        const result = await placesService.getRecommendations({
+          selected_uni: selectedUni,
+          selected_cat: apiCat,
+          lat: campusCenter.lat,
+          lon: campusCenter.lon,
+          searchQuery: debouncedSearchQuery,
+        });
+
+        if (!active) return;
+
+        if (result && result.success === false && result.code === 'PLACE_RECOMMENDER_NOT_CONFIGURED') {
+          setError('PLACE_RECOMMENDER_NOT_CONFIGURED');
+          setAllRecommendations([]);
+          setSelectedPlace(null);
+        } else {
+          const recommendations = result.recommendations || [];
+          setAllRecommendations(recommendations);
+          
+          // Reset selected place if it's not present in the new recommendations
+          setSelectedPlace(prev => {
+            if (!prev) return null;
+            const exists = recommendations.some(r => r.id === prev.id || (r.name === prev.name && r.category === prev.category));
+            return exists ? prev : null;
+          });
+        }
+      } catch (err) {
+        if (!active) return;
+        setError(err.response?.data?.message || 'Gagal mendapatkan rekomendasi. Coba lagi.');
+        setAllRecommendations([]);
+        setSelectedPlace(null);
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      active = false;
+    };
+  }, [selectedUni, activeChip, activeLainnya, debouncedSearchQuery, configLoading]);
 
   // Close Lainnya dropdown on outside click
   useEffect(() => {
@@ -630,22 +696,22 @@ export default function PlacesPage() {
     return distA - distB;
   });
 
-  // filteredRecommendations: search from allRecommendations (not displayedRecommendations)
-  const filteredRecommendations = searchQuery.trim()
-    ? sortedRecommendations.filter(p => {
-        const q = searchQuery.toLowerCase().trim();
-        return (
-          p.name?.toLowerCase().includes(q) ||
-          p.category?.toLowerCase().includes(q) ||
-          p.rawCategory?.toLowerCase().includes(q) ||
-          p.address?.toLowerCase().includes(q) ||
-          p.description?.toLowerCase().includes(q)
-        );
-      })
-    : sortedRecommendations;
+  const filteredRecommendations = sortedRecommendations;
 
-  // displayedRecommendations: only what we show in cards and on map
-  const displayedRecommendations = filteredRecommendations.slice(0, visibleLimit);
+  // Pagination derived values
+  const totalCount  = filteredRecommendations.length;
+  const totalPages  = Math.ceil(totalCount / PAGE_SIZE);
+  const safePage    = Math.min(Math.max(1, currentPage), Math.max(1, totalPages));
+
+  // displayedRecommendations: current page slice — drives both cards and map markers
+  const displayedRecommendations = filteredRecommendations.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE
+  );
+
+  // Subtitle counts
+  const startItem = totalCount === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
+  const endItem   = Math.min(safePage * PAGE_SIZE, totalCount);
 
   const isPlaceFavorited = (place) => {
     if (!place) return false;
@@ -714,13 +780,24 @@ export default function PlacesPage() {
     }
   };
 
+  // ── Campus Change ──
+  const handleCampusChange = (newUni) => {
+    setSelectedUni(newUni);
+    setSearchQuery('');
+    setDebouncedSearchQuery('');
+    setCurrentPage(1);
+    setSelectedPlace(null);
+  };
+
   // ── Chip click ──
   const handleChipClick = (chipId) => {
     setActiveChip(chipId);
     setActiveLainnya(null);
     setLainnyaOpen(false);
     setSearchQuery('');
-    setVisibleLimit(PAGE_SIZE);
+    setDebouncedSearchQuery('');
+    setCurrentPage(1);
+    setSelectedPlace(null);
   };
 
   // ── Lainnya sub-category select ──
@@ -729,34 +806,25 @@ export default function PlacesPage() {
     setActiveChip('lainnya');
     setLainnyaOpen(false);
     setSearchQuery('');
-    setVisibleLimit(PAGE_SIZE);
+    setDebouncedSearchQuery('');
+    setCurrentPage(1);
+    setSelectedPlace(null);
   };
 
-  // ── Core search ──
-  const runSearch = async (loc, apiCat) => {
-    if (!selectedUni) { setError('Pilih kampus terlebih dahulu.'); return; }
-    setLoading(true); setHasSearched(true); setAllRecommendations([]); setSelectedPlace(null); setError('');
-    setSearchQuery('');
-    setVisibleLimit(PAGE_SIZE);
-    try {
-      const result = await placesService.getRecommendations({
-        selected_uni: selectedUni,
-        selected_cat: apiCat,
-        lat: loc.lat,
-        lon: loc.lon,
-      });
-      if (result && result.success === false && result.code === 'PLACE_RECOMMENDER_NOT_CONFIGURED') {
-        setError('PLACE_RECOMMENDER_NOT_CONFIGURED');
-        setAllRecommendations([]);
-        setSelectedPlace(null);
-      } else {
-        setAllRecommendations(result.recommendations || []);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Gagal mendapatkan rekomendasi. Coba lagi.');
-    } finally {
-      setLoading(false);
-    }
+  // ── Page change handler ──
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    // Clear selected place if it's not on the new page
+    setSelectedPlace(prev => {
+      if (!prev) return null;
+      const newPage = filteredRecommendations.slice(
+        (page - 1) * PAGE_SIZE,
+        page * PAGE_SIZE
+      );
+      return newPage.some(r => r.id === prev.id) ? prev : null;
+    });
+    // Scroll list back to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Active chip label (for Lainnya sub-selections)
@@ -773,7 +841,7 @@ export default function PlacesPage() {
           <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('campus') || 'Kampus'}</span>
         </div>
         <div className="relative">
-          <select value={selectedUni} onChange={e => setSelectedUni(e.target.value)}
+          <select value={selectedUni} onChange={e => handleCampusChange(e.target.value)}
             disabled={configLoading}
             className="appearance-none pl-4 pr-9 py-2.5 bg-white border border-gray-200 rounded-2xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#FDC439]/40 focus:border-[#FDC439] shadow-soft cursor-pointer max-w-[280px] disabled:opacity-60">
             {campusList.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
@@ -903,11 +971,7 @@ export default function PlacesPage() {
             {error && <p className="text-xs text-gray-400 font-mono mt-1">Detail: {error}</p>}
           </div>
           <button
-            onClick={() => {
-              if (currentCampusCenter) {
-                runSearch(currentCampusCenter, activeLainnya || resolveApiCat(activeChip, appConfig));
-              }
-            }}
+            onClick={() => { setError(''); setHasSearched(false); }}
             className="bg-[#FD6825] hover:bg-[#E85A1D] px-7 py-3 rounded-full text-xs font-bold text-white shadow-lg shadow-[#FD6825]/25 hover:scale-105 active:scale-95 transition-all"
           >
             Coba Lagi
@@ -934,11 +998,7 @@ export default function PlacesPage() {
             </p>
           </div>
           <button
-            onClick={() => {
-              if (currentCampusCenter) {
-                runSearch(currentCampusCenter, activeLainnya || resolveApiCat(activeChip, appConfig));
-              }
-            }}
+            onClick={() => { setError(''); setHasSearched(false); }}
             className="bg-[#FD6825] hover:bg-[#E85A1D] px-7 py-3 rounded-full text-xs font-bold text-white shadow-lg shadow-[#FD6825]/25 hover:scale-105 active:scale-95 transition-all"
           >
             Coba Lagi
@@ -1027,16 +1087,10 @@ export default function PlacesPage() {
                 <h2 className="text-2xl font-bold text-gray-900">{t('places_near_you')}</h2>
                 <p className="text-sm text-gray-400 font-medium mt-0.5">
                   {searchQuery.trim()
-                    ? (
-                        filteredRecommendations.length <= visibleLimit
-                          ? `Ditemukan ${filteredRecommendations.length} hasil untuk “${searchQuery.trim()}”`
-                          : `Menampilkan ${displayedRecommendations.length} dari ${filteredRecommendations.length} hasil untuk “${searchQuery.trim()}”`
-                      )
-                    : (
-                        activeChip === 'all'
-                          ? `Menampilkan ${displayedRecommendations.length} dari ${allRecommendations.length} rekomendasi terdekat dari beberapa kategori`
-                          : `Menampilkan ${displayedRecommendations.length} dari ${allRecommendations.length} rekomendasi terdekat · ${activeChipLabel}`
-                      )
+                    ? `Menampilkan ${startItem}–${endItem} dari ${totalCount} hasil untuk "${searchQuery.trim()}"`
+                    : activeChip === 'all'
+                      ? `Menampilkan ${startItem}–${endItem} dari ${totalCount} rekomendasi terdekat dari beberapa kategori`
+                      : `Menampilkan ${startItem}–${endItem} dari ${totalCount} rekomendasi terdekat · ${activeChipLabel}`
                   }
                 </p>
               </div>
@@ -1049,13 +1103,13 @@ export default function PlacesPage() {
                 value={searchQuery}
                 onChange={e => {
                   setSearchQuery(e.target.value);
-                  setVisibleLimit(PAGE_SIZE);
+                  setCurrentPage(1);
                 }}
                 placeholder="Cari dari semua rekomendasi..."
                 className="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-[#FD6825]/15 focus:border-[#FD6825] shadow-soft transition-all placeholder:text-gray-300"
               />
               {searchQuery && (
-                <button onClick={() => { setSearchQuery(''); setVisibleLimit(PAGE_SIZE); }}
+                <button onClick={() => { setSearchQuery(''); setDebouncedSearchQuery(''); setCurrentPage(1); }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                   <X size={14}/>
                 </button>
@@ -1067,7 +1121,7 @@ export default function PlacesPage() {
               <div className="flex flex-col items-center py-10 text-gray-400 gap-2">
                 <Search size={28} className="text-gray-200"/>
                 <p className="text-sm font-bold">Tidak ada tempat yang cocok dengan pencarian ini.</p>
-                <button onClick={() => { setSearchQuery(''); setVisibleLimit(PAGE_SIZE); }} className="text-xs text-[#FD6825] font-bold hover:underline">Hapus pencarian</button>
+                <button onClick={() => { setSearchQuery(''); setDebouncedSearchQuery(''); setCurrentPage(1); }} className="text-xs text-[#FD6825] font-bold hover:underline">Hapus pencarian</button>
               </div>
             )}
 
@@ -1090,30 +1144,13 @@ export default function PlacesPage() {
               </AnimatePresence>
             </div>
 
-            {/* Tampilkan lebih banyak button */}
-            {filteredRecommendations.length > visibleLimit ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex justify-center pt-2"
-              >
-                <button
-                  onClick={() => setVisibleLimit(v => v + PAGE_SIZE)}
-                  className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 hover:border-[#FD6825] hover:text-[#FD6825] shadow-soft hover:shadow-md active:scale-95 transition-all"
-                >
-                  <ChevronDown size={16}/>
-                  Tampilkan lebih banyak
-                  <span className="text-xs font-normal text-gray-400 ml-1">
-                    ({visibleLimit} / {filteredRecommendations.length})
-                  </span>
-                </button>
-              </motion.div>
-            ) : (
-              allRecommendations.length > PAGE_SIZE && filteredRecommendations.length > 0 && (
-                <p className="text-center text-xs text-gray-400 font-medium pt-2">
-                  Semua rekomendasi sudah ditampilkan.
-                </p>
-              )
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <PlacesPagination
+                currentPage={safePage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
             )}
           </div>
 
