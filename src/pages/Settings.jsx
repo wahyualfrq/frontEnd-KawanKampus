@@ -103,7 +103,6 @@ export default function SettingsPage() {
     e.preventDefault();
     try {
       setLoading(true);
-      setErrorMsg('');
       
       const payload = { ...profileForm };
       if (photoPreview) {
@@ -274,8 +273,6 @@ export default function SettingsPage() {
               key={item.id}
               onClick={() => {
                 setActiveMenu(item.id);
-                setErrorMsg('');
-                setSuccessMsg('');
               }}
               className={cn(
                 'flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border shadow-soft shrink-0 cursor-pointer',
@@ -304,8 +301,6 @@ export default function SettingsPage() {
                   key={item.id}
                   onClick={() => {
                     setActiveMenu(item.id);
-                    setErrorMsg('');
-                    setSuccessMsg('');
                   }}
                   className={cn(
                     'w-full flex items-center gap-3 px-4 py-3.5 text-left transition-all border-b border-gray-50 last:border-b-0',
