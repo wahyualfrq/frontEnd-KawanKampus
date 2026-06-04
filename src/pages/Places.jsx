@@ -1057,26 +1057,8 @@ export default function PlacesPage() {
         </div>
       )}
 
-      {/* No results from API */}
-      {!loading && hasSearched && allRecommendations.length === 0 && !error && (
-        <motion.div 
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-center justify-center py-14 px-6 text-center bg-white rounded-[28px] border border-gray-100 shadow-medium max-w-2xl mx-auto space-y-4"
-        >
-          <div className="w-16 h-16 rounded-[22px] bg-[#FFF8EC] border border-[#FDC439]/30 flex items-center justify-center text-[#FD6825] shadow-sm">
-            <MapPin size={32} />
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-lg font-black text-gray-900 tracking-tight">
-              Tidak ada rekomendasi untuk kategori ini. Coba kategori lain.
-            </h3>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Results */}
-      {!loading && allRecommendations.length > 0 && (
+      {/* Results / List Area */}
+      {!loading && !error && error !== 'PLACE_RECOMMENDER_NOT_CONFIGURED' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-7">
 
           {/* Left: list + search */}
@@ -1096,7 +1078,7 @@ export default function PlacesPage() {
               </div>
             </div>
 
-            {/* Search bar ── searches allRecommendations, not displayedRecommendations */}
+            {/* Search bar */}
             <div className="relative">
               <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
               <input
@@ -1116,33 +1098,52 @@ export default function PlacesPage() {
               )}
             </div>
 
-            {/* Search empty state */}
-            {filteredRecommendations.length === 0 && searchQuery.trim() && (
+            {/* Category empty state (No search query, but category has 0 items) */}
+            {allRecommendations.length === 0 && !searchQuery.trim() && (
+              <motion.div 
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center py-14 px-6 text-center bg-white rounded-[28px] border border-gray-100 shadow-medium space-y-4"
+              >
+                <div className="w-16 h-16 rounded-[22px] bg-[#FFF8EC] border border-[#FDC439]/30 flex items-center justify-center text-[#FD6825] shadow-sm">
+                  <MapPin size={32} />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-lg font-black text-gray-900 tracking-tight">
+                    Tidak ada rekomendasi untuk kategori ini. Coba kategori lain.
+                  </h3>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Search empty state (Search query entered, but 0 matches found) */}
+            {((allRecommendations.length === 0 && searchQuery.trim()) || (allRecommendations.length > 0 && filteredRecommendations.length === 0 && searchQuery.trim())) && (
               <div className="flex flex-col items-center py-10 text-gray-400 gap-2">
                 <Search size={28} className="text-gray-200"/>
                 <p className="text-sm font-bold">Tidak ada tempat yang cocok dengan pencarian ini.</p>
                 <button onClick={() => { setSearchQuery(''); setDebouncedSearchQuery(''); setCurrentPage(1); }} className="text-xs text-[#FD6825] font-bold hover:underline">Hapus pencarian</button>
               </div>
             )}
-
-            {/* Cards — only displayedRecommendations */}
-            <div className="space-y-3">
-              <AnimatePresence>
-                {displayedRecommendations.map((place, idx) => (
-                  <motion.div key={place.id || idx}
-                    initial={{ opacity:0, y:6 }} animate={{ opacity:1, y:0 }}
-                    transition={{ delay: Math.min(idx, 6) * 0.04 }}>
-                    <PlaceCard
-                      place={place}
-                      isSelected={selectedPlace?.id === place.id}
-                      isFavorited={isPlaceFavorited(place)}
-                      onToggleFavorite={() => handleToggleFavorite(place)}
-                      onClick={() => setSelectedPlace(place)}
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
+            {/* Cards — only when allRecommendations has items */}
+            {allRecommendations.length > 0 && (
+              <div className="space-y-3">
+                <AnimatePresence>
+                  {displayedRecommendations.map((place, idx) => (
+                    <motion.div key={place.id || idx}
+                      initial={{ opacity:0, y:6 }} animate={{ opacity:1, y:0 }}
+                      transition={{ delay: Math.min(idx, 6) * 0.04 }}>
+                      <PlaceCard
+                        place={place}
+                        isSelected={selectedPlace?.id === place.id}
+                        isFavorited={isPlaceFavorited(place)}
+                        onToggleFavorite={() => handleToggleFavorite(place)}
+                        onClick={() => setSelectedPlace(place)}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
 
             {/* Pagination */}
             {totalPages > 1 && (
