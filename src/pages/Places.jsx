@@ -572,9 +572,10 @@ export default function PlacesPage() {
   const [favorites, setFavorites]                   = useState([]);
   const [currentPage, setCurrentPage]               = useState(1);
 
-  // Client-side text filter
-  const [searchQuery, setSearchQuery]               = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  // Search state — two-phase: draft (what user is typing) vs submitted (what actually triggers API)
+  const [draftSearchQuery, setDraftSearchQuery]         = useState('');
+  const [submittedSearchQuery, setSubmittedSearchQuery] = useState('');
+  const [searchHelperText, setSearchHelperText]         = useState('');
 
   // ── Load config ──
   useEffect(() => {
@@ -592,20 +593,34 @@ export default function PlacesPage() {
     }).catch(e => console.warn('Failed to load favorites:', e.message));
   }, []);
 
-  // ── Debounce Search Query ──
-  useEffect(() => {
-    if (searchQuery === '') {
-      setDebouncedSearchQuery('');
+  // ── Submit search handler ──
+  const handleSearchSubmit = () => {
+    const trimmed = draftSearchQuery.trim();
+    setSearchHelperText('');
+
+    if (trimmed === '') {
+      // Clear search → go back to default
+      setSubmittedSearchQuery('');
+      setCurrentPage(1);
       return;
     }
-    const handler = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 400);
 
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchQuery]);
+    if (trimmed.length < 3) {
+      setSearchHelperText('Ketik minimal 3 karakter untuk mencari tempat.');
+      return;
+    }
+
+    setSubmittedSearchQuery(trimmed);
+    setCurrentPage(1);
+  };
+
+  // ── Clear search ──
+  const handleSearchClear = () => {
+    setDraftSearchQuery('');
+    setSubmittedSearchQuery('');
+    setSearchHelperText('');
+    setCurrentPage(1);
+  };
 
   // ── Unified Fetch Effect (handles race conditions) ──
   useEffect(() => {
@@ -637,7 +652,7 @@ export default function PlacesPage() {
           selected_cat: apiCat,
           lat: campusCenter.lat,
           lon: campusCenter.lon,
-          searchQuery: debouncedSearchQuery,
+          searchQuery: submittedSearchQuery,
         });
 
         if (!active) return;
@@ -649,7 +664,21 @@ export default function PlacesPage() {
         } else {
           const recommendations = result.recommendations || [];
           setAllRecommendations(recommendations);
-          
+
+          // Log SEARCHED_PLACE only when there's an actual submitted query
+          if (submittedSearchQuery && submittedSearchQuery.length >= 3) {
+            try {
+              historyService.createHistory('SEARCHED_PLACE', {
+                query: submittedSearchQuery,
+                campus: selectedUni,
+                category: apiCat,
+                resultCount: recommendations.length,
+              });
+            } catch (e) {
+              console.warn('[Places] Failed to log SEARCHED_PLACE:', e.message);
+            }
+          }
+
           // Reset selected place if it's not present in the new recommendations
           setSelectedPlace(prev => {
             if (!prev) return null;
@@ -674,7 +703,7 @@ export default function PlacesPage() {
     return () => {
       active = false;
     };
-  }, [selectedUni, activeChip, activeLainnya, debouncedSearchQuery, configLoading]);
+  }, [selectedUni, activeChip, activeLainnya, submittedSearchQuery, configLoading]);
 
   // Close Lainnya dropdown on outside click
   useEffect(() => {
@@ -783,8 +812,9 @@ export default function PlacesPage() {
   // ── Campus Change ──
   const handleCampusChange = (newUni) => {
     setSelectedUni(newUni);
-    setSearchQuery('');
-    setDebouncedSearchQuery('');
+    setDraftSearchQuery('');
+    setSubmittedSearchQuery('');
+    setSearchHelperText('');
     setCurrentPage(1);
     setSelectedPlace(null);
   };
@@ -794,8 +824,9 @@ export default function PlacesPage() {
     setActiveChip(chipId);
     setActiveLainnya(null);
     setLainnyaOpen(false);
-    setSearchQuery('');
-    setDebouncedSearchQuery('');
+    setDraftSearchQuery('');
+    setSubmittedSearchQuery('');
+    setSearchHelperText('');
     setCurrentPage(1);
     setSelectedPlace(null);
   };
@@ -805,8 +836,9 @@ export default function PlacesPage() {
     setActiveLainnya(rawCat);
     setActiveChip('lainnya');
     setLainnyaOpen(false);
-    setSearchQuery('');
-    setDebouncedSearchQuery('');
+    setDraftSearchQuery('');
+    setSubmittedSearchQuery('');
+    setSearchHelperText('');
     setCurrentPage(1);
     setSelectedPlace(null);
   };
@@ -971,7 +1003,7 @@ export default function PlacesPage() {
             {error && <p className="text-xs text-gray-400 font-mono mt-1">Detail: {error}</p>}
           </div>
           <button
-            onClick={() => { setError(''); setHasSearched(false); }}
+            onClick={() => { setError(''); setHasSearched(false); setSubmittedSearchQuery(submittedSearchQuery); }}
             className="bg-[#FD6825] hover:bg-[#E85A1D] px-7 py-3 rounded-full text-xs font-bold text-white shadow-lg shadow-[#FD6825]/25 hover:scale-105 active:scale-95 transition-all"
           >
             Coba Lagi
@@ -1068,8 +1100,8 @@ export default function PlacesPage() {
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">{t('places_near_you')}</h2>
                 <p className="text-sm text-gray-400 font-medium mt-0.5">
-                  {searchQuery.trim()
-                    ? `Menampilkan ${startItem}–${endItem} dari ${totalCount} hasil untuk "${searchQuery.trim()}"`
+                  {submittedSearchQuery
+                    ? `Menampilkan ${startItem}–${endItem} dari ${totalCount} hasil untuk "${submittedSearchQuery}"`
                     : activeChip === 'all'
                       ? `Menampilkan ${startItem}–${endItem} dari ${totalCount} rekomendasi terdekat dari beberapa kategori`
                       : `Menampilkan ${startItem}–${endItem} dari ${totalCount} rekomendasi terdekat · ${activeChipLabel}`
@@ -1079,27 +1111,49 @@ export default function PlacesPage() {
             </div>
 
             {/* Search bar */}
-            <div className="relative">
-              <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"/>
-              <input
-                value={searchQuery}
-                onChange={e => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1);
-                }}
-                placeholder="Cari dari semua rekomendasi..."
-                className="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-[#FD6825]/15 focus:border-[#FD6825] shadow-soft transition-all placeholder:text-gray-300"
-              />
-              {searchQuery && (
-                <button onClick={() => { setSearchQuery(''); setDebouncedSearchQuery(''); setCurrentPage(1); }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
-                  <X size={14}/>
+            <div className="space-y-1.5">
+              <div className="relative">
+                <button
+                  onClick={handleSearchSubmit}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 p-1 rounded-lg text-gray-400 hover:text-[#FD6825] hover:bg-[#FD6825]/8 transition-all"
+                  title="Cari"
+                >
+                  <Search size={14}/>
                 </button>
+                <input
+                  value={draftSearchQuery}
+                  onChange={e => {
+                    setDraftSearchQuery(e.target.value);
+                    // Clear helper text as soon as user modifies input
+                    if (searchHelperText) setSearchHelperText('');
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') handleSearchSubmit();
+                  }}
+                  placeholder="Cari tempat lalu tekan Enter..."
+                  className="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-[#FD6825]/15 focus:border-[#FD6825] shadow-soft transition-all placeholder:text-gray-300"
+                />
+                {draftSearchQuery && (
+                  <button
+                    onClick={handleSearchClear}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    title="Hapus pencarian"
+                  >
+                    <X size={14}/>
+                  </button>
+                )}
+              </div>
+              {/* Inline helper for short query */}
+              {searchHelperText && (
+                <p className="text-xs font-medium text-amber-600 px-1 flex items-center gap-1.5">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                  {searchHelperText}
+                </p>
               )}
             </div>
 
             {/* Category empty state (No search query, but category has 0 items) */}
-            {allRecommendations.length === 0 && !searchQuery.trim() && (
+            {allRecommendations.length === 0 && !submittedSearchQuery && (
               <motion.div 
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1116,12 +1170,12 @@ export default function PlacesPage() {
               </motion.div>
             )}
 
-            {/* Search empty state (Search query entered, but 0 matches found) */}
-            {((allRecommendations.length === 0 && searchQuery.trim()) || (allRecommendations.length > 0 && filteredRecommendations.length === 0 && searchQuery.trim())) && (
+            {/* Search empty state (Search query submitted, but 0 results found) */}
+            {allRecommendations.length === 0 && submittedSearchQuery && (
               <div className="flex flex-col items-center py-10 text-gray-400 gap-2">
                 <Search size={28} className="text-gray-200"/>
-                <p className="text-sm font-bold">Tidak ada tempat yang cocok dengan pencarian ini.</p>
-                <button onClick={() => { setSearchQuery(''); setDebouncedSearchQuery(''); setCurrentPage(1); }} className="text-xs text-[#FD6825] font-bold hover:underline">Hapus pencarian</button>
+                <p className="text-sm font-bold">Tidak ada tempat yang cocok dengan "{submittedSearchQuery}".</p>
+                <button onClick={handleSearchClear} className="text-xs text-[#FD6825] font-bold hover:underline">Hapus pencarian</button>
               </div>
             )}
             {/* Cards — only when allRecommendations has items */}
