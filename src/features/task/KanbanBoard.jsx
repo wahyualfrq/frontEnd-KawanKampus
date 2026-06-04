@@ -19,7 +19,7 @@ import TaskCard from './TaskCard';
 import TaskForm from './TaskForm';
 import TaskSummary from './TaskSummary';
 import { Plus, Filter, ChevronDown, Search, X, SlidersHorizontal } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { usePreferences } from '../../context/PreferencesContext';
 import { cn } from '../../utils/cn';
 
@@ -65,17 +65,30 @@ export default function KanbanBoard() {
   const categoryRef  = useRef(null);
   const [catDropOpen, setCatDropOpen] = useState(false);
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // ── Close dropdowns on outside click ─────────────────────────────────────
   useEffect(() => {
     const handler = (e) => {
-      if (filterRef.current   && !filterRef.current.contains(e.target))   setFilterOpen(false);
-      if (categoryRef.current && !categoryRef.current.contains(e.target)) setCatDropOpen(false);
+      if (!isMobile && filterRef.current && !filterRef.current.contains(e.target)) {
+        setFilterOpen(false);
+      }
+      if (categoryRef.current && !categoryRef.current.contains(e.target)) {
+        setCatDropOpen(false);
+      }
     };
     const esc = (e) => { if (e.key === 'Escape') { setFilterOpen(false); setCatDropOpen(false); } };
     document.addEventListener('mousedown', handler);
     document.addEventListener('keydown', esc);
     return () => { document.removeEventListener('mousedown', handler); document.removeEventListener('keydown', esc); };
-  }, []);
+  }, [isMobile]);
 
   // ── Sync pending filter when popover opens ────────────────────────────────
   useEffect(() => {
@@ -350,7 +363,7 @@ export default function KanbanBoard() {
               </button>
 
               {/* Filter popover */}
-              {filterOpen && (
+              {!isMobile && filterOpen && (
                 <motion.div
                   initial={{ opacity: 0, y: -8, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -596,6 +609,128 @@ export default function KanbanBoard() {
         initialStatus={initialStatus}
         editTask={editTask}
       />
+
+      {/* ── Mobile Filter Bottom Sheet ── */}
+      <AnimatePresence>
+        {isMobile && filterOpen && (
+          <div className="fixed inset-0 z-[999] flex items-end justify-center">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setFilterOpen(false)}
+              className="absolute inset-0 bg-black/45 backdrop-blur-sm"
+            />
+            {/* Panel */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="relative w-full max-w-[420px] bg-white rounded-t-[24px] shadow-2xl z-10 max-h-[80vh] flex flex-col overflow-hidden"
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center py-3 shrink-0">
+                <div className="w-12 h-1 bg-gray-200 rounded-full" />
+              </div>
+
+              {/* Title & Close */}
+              <div className="flex items-center justify-between px-6 pb-4 border-b border-gray-100 shrink-0">
+                <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Filter Tugas</h3>
+                <button
+                  onClick={() => setFilterOpen(false)}
+                  className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Scrollable content */}
+              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+                {/* Status */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Status</p>
+                  <div className="flex flex-wrap gap-2">
+                    {STATUSES.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => setPendingStatus(s)}
+                        className={cn(
+                          'px-4 py-2.5 rounded-xl text-xs font-bold border transition-all min-h-[44px]',
+                          pendingStatus === s
+                            ? 'bg-[#FD6825] text-white border-[#FD6825]'
+                            : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                        )}
+                      >
+                        {s === 'Semua' ? 'Semua' : STATUS_LABELS[s]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Priority */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Prioritas</p>
+                  <div className="flex flex-wrap gap-2">
+                    {PRIORITIES.map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setPendingPriority(p)}
+                        className={cn(
+                          'px-4 py-2.5 rounded-xl text-xs font-bold border transition-all min-h-[44px]',
+                          pendingPriority === p
+                            ? 'bg-[#FD6825] text-white border-[#FD6825]'
+                            : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                        )}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Deadline */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Deadline</p>
+                  <div className="flex flex-wrap gap-2">
+                    {['Semua', 'Hari ini', 'Minggu ini', 'Terlewat'].map((d) => (
+                      <button
+                        key={d}
+                        onClick={() => setPendingDeadline(d)}
+                        className={cn(
+                          'px-4 py-2.5 rounded-xl text-xs font-bold border transition-all min-h-[44px]',
+                          pendingDeadline === d
+                            ? 'bg-[#FD6825] text-white border-[#FD6825]'
+                            : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                        )}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Sticky Footer */}
+              <div className="border-t border-gray-100 p-4 bg-gray-50 flex gap-3 shrink-0">
+                <button
+                  onClick={resetFilter}
+                  className="flex-1 py-3 rounded-xl text-xs font-bold text-gray-600 border border-gray-200 bg-white hover:bg-gray-50 transition-all min-h-[44px]"
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={applyFilter}
+                  className="flex-1 py-3 rounded-xl text-xs font-bold text-white bg-[#FD6825] hover:bg-[#E85A1D] shadow-sm transition-all min-h-[44px]"
+                >
+                  Terapkan
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
